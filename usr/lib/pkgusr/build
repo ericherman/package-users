@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# This build script is meant to be executed from within the source directory
+# created by extracting the tarball.
+#
+# It will create 8 log files in the $HOME directory:
+#   00-configure.log: All messages output during configure
+#   00-configure.err: Just the errors output during configure
+#   01-make.log: All messages output during make
+#   01-make.err: Just the errors output during make
+#   02-test.log: All messages output during make check
+#   02-test.err: Just the errors output during make check
+#   03-install.log: All messages output during make install
+#   03-install.err: Just the errors output during make install
+#
+# After running the script you should check the *.err files to see
+# if any problems have occurred. If that is the case, use the corresponding
+# *.log files to see the error messages in context.
+
+function run_stage()
+{
+    STAGENAME=$1
+    STAGENUMBER=$2
+    COMMAND=$3
+    LOG=${HOME}/${STAGENUMBER}-${STAGENAME}
+    echo -n ${STAGENAME}...
+    BEFORE=$(date +%s)
+    { $COMMAND 3>&1 1>&2 2>&3 | tee "${LOG}.err" ;} &> "${LOG}.log"
+    for i in "${PIPESTATUS[@]}" 
+    do
+        test $i != 0 && { echo FAILED! ; exit 1 ; }
+    done
+    AFTER=$(date +%s)
+    echo "successful! ($(($AFTER - $BEFORE)) seconds)"
+    return 0
+}
+
+run_stage 'configure' 00 'configure_commands'
+run_stage 'build' 01 'make_commands'
+run_stage 'test' 02 'test_commands'
+run_stage 'install' 03 'install_commands'
+

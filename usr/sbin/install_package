@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright (c) 2000,2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# -ne 2 ]; then
+  echo 1>&2
+  echo 1>&2 'USAGE: install_package <description> <name>'
+  echo 1>&2
+  echo 1>&2 'Creates a new package user called <name> with primary group <name>'
+  echo 1>&2 'and description <description>.'
+  echo 1>&2 'If the user account has been created successfully, `su <name>'"'"' will be'
+  echo 1>&2 'executed so that you can start working with the new account right away.'
+  echo 1>&2
+  echo 1>&2 '<description> needs to be a valid string for the /etc/passwd description'
+  echo 1>&2 '  field. This means, among other things, that it must not contain ":".'
+  echo 1>&2 '  Don'"'"'t forget to properly quote <description> if it contains spaces or'
+  echo 1>&2 '  other characters interpreted by the shell!'
+  echo 1>&2
+  echo 1>&2 'This script leaves the actual creation of the new account to the'
+  echo 1>&2 'add_package_user script. Check out its documentation for details.'
+  echo 1>&2
+  exit 1
+fi
+
+if [ $UID -ne 0 ]; then echo Please run this script as root. ; exit 1; fi
+add_package_user "${1}" $2 || exit 1
+su $2

@@ -1,0 +1,50 @@
+#!/bin/bash
+# Copyright (c) 2000 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+watchdir=/usr/share/locale
+
+DAISY_CHAIN=""
+
+for p in $(type -ap mkdir) ; do
+  if [ ! $p -ef $0 ]; then DAISY_CHAIN=$p ; break ; fi
+done
+
+if [ ! -n "$DAISY_CHAIN" ]; then
+  echo Cannot find real ${0##*/} command 
+  exit 1
+fi
+
+if [ $UID == 0 ]; then
+  exec $DAISY_CHAIN "$@"
+fi
+
+cmdline="$@"
+
+dirs=""
+for((i=$#; $i>0;))
+do
+  a="$1"
+  shift 1; i=$(($i-1))
+  case "$a" in
+    $watchdir/*) dirs="$dirs ""`expr $a : "$watchdir/\(.*\)"`" 
+                 set -- "$@" "$a" 
+                 ;;
+    *) set -- "$@" "$a" ;;
+  esac
+done
+
+$DAISY_CHAIN "$@" || exit $?
+
+test z"$dirs" != z &&
+echo 1>&2 '***' mkdir "$cmdline"
+for dir in $dirs ; do
+  cumuldir=""
+  for d in `echo $dirs | sed 's#/# #g' -` ; do
+    cumuldir=$cumuldir$d/
+    chgrp install $watchdir/$cumuldir
+    test -k $watchdir/$cumuldir || chmod g+w,o+t $watchdir/$cumuldir
+  done  
+done
+exit 0

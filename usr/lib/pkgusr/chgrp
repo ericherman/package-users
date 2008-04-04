@@ -1,0 +1,27 @@
+#!/bin/bash
+# Copyright (c) 2000,2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+DAISY_CHAIN=""
+
+for p in $(type -ap chgrp) ; do
+  if [ ! $p -ef $0 ]; then DAISY_CHAIN=$p ; break ; fi
+done
+
+if [ ! -n "$DAISY_CHAIN" ]; then
+  echo Cannot find real ${0##*/} command 
+  exit 1
+fi
+
+if [ $UID == 0 ]; then
+  exec $DAISY_CHAIN "$@"
+fi
+
+if [ "$1" == "tty" ]; then
+  echo 1>&2 '***' chgrp "$@"  
+else
+  $DAISY_CHAIN "$@" || exit $?
+fi
+
+exit 0

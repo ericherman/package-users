@@ -1,0 +1,41 @@
+#!/bin/bash
+# Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# != 1 -o "$1" = "--help" ]; then
+  echo 1>&2
+  echo 1>&2 'USAGE: '"${0##*/}"' <user_or_group>'
+  echo 1>&2
+  echo 1>&2 '  Outputs a categorized list of files and directories with properties'
+  echo 1>&2 '  that could mean trouble and should be investigated.'
+  echo 1>&2 '  Suspicious objects will be reported only if group and/or user equals'
+  echo 1>&2 '  <user_or_group> (numeric UID/GID allowed).'
+  echo 1>&2 '  This script calls `'"${0%_*}'"' for the real work.'
+  echo 1>&2
+  exit 1
+fi
+
+ugname="$1"
+
+ugmatcher=(-false)
+#test if find accepts ugname as a user, and append to ugmatcher if it does
+if find / -maxdepth 0 -user "$ugname" >/dev/null 2>&1 ; then
+  ugmatcher[${#ugmatcher[@]}]="-or"
+  ugmatcher[${#ugmatcher[@]}]="-user"
+  ugmatcher[${#ugmatcher[@]}]="$ugname"
+fi
+#test if find accepts ugname as a group, and append to ugmatcher if it does
+if find / -maxdepth 0 -group "$ugname" >/dev/null 2>&1 ; then
+  ugmatcher[${#ugmatcher[@]}]="-or"
+  ugmatcher[${#ugmatcher[@]}]="-group"
+  ugmatcher[${#ugmatcher[@]}]="$ugname"
+fi
+
+#if find accepted ugname as neither user nor group, then exit
+if [ "${#ugmatcher[@]}" = 1 ]; then
+  echo 1>&2 'find does not accept `'"$ugname'"' as group or user name'
+  exit 1
+fi
+
+"${0%_*}" "${ugmatcher[@]}"

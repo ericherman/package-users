@@ -1,0 +1,127 @@
+#!/bin/bash
+# Copyright (c) 2000,2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+manpagesowner=man-pages
+localedir=/usr/share/locale
+cmdline="$@"
+
+DAISY_CHAIN=""
+
+for p in $(type -ap install) ; do
+  if [ ! $p -ef $0 ]; then DAISY_CHAIN=$p ; break ; fi
+done
+
+if [ ! -n "$DAISY_CHAIN" ]; then
+  echo Cannot find real ${0##*/} command 
+  exit 1
+fi
+
+if [ $UID == 0 ]; then
+  exec $DAISY_CHAIN "$@"
+fi
+
+#kill unused -c parameter if we get it
+if [ z"$1" = z"-c" ]; then shift 1 ; fi
+
+	#********** test if we create directories ********************
+if [ \( z"$1" = z"-d" \) -o \( z"$1" = z"-m" -a z"$3" = z"-d" \) ]; then  
+  locdirs=""
+  notify=0
+  havedir=0
+  for((i=$#; $i>0; ))
+  do
+    a="$1"
+    shift 1; i=$(($i-1))
+    case "$a" in
+      -o|-g|--owner|--group) notify=1 
+      			shift 1; i=$(($i-1))
+          		set -- "$@" 
+          ;;
+      $localedir/*) if [ ! -d "$a" ]; then
+      		      locdirs="$locdirs ""`expr $a : "$localedir/\(.*\)"`" 
+                      set -- "$@" "$a"
+                      havedir=1
+                    else
+                      notify=1
+                      set -- "$@"
+                    fi  
+                   ;;
+      */*|/sbin) if [ ! -d "$a" ]; then 
+      	     set -- "$@" "$a" 
+      	     havedir=1
+      	   else
+      	     notify=1
+      	     set -- "$@"
+      	   fi             
+      	   ;;
+      *) set -- "$@" "$a" ;;
+    esac
+  done
+  
+  test $notify -eq 1 -o z"$locdirs" != z && \
+  					echo 1>&2 '***' install "$cmdline"
+
+  test $havedir -eq 0 && exit 0
+
+  $DAISY_CHAIN "$@" || exit $?
+  
+  test z"$locdirs" != z &&
+  for dir in $locdirs ; do
+    cumuldir=""
+    for d in `echo $locdirs | sed 's#/# #g' -` ; do
+      cumuldir=$cumuldir$d/
+      if [ -d $localedir/$cumuldir ]; then
+        chgrp install $localedir/$cumuldir
+        chmod g+w,o+t $localedir/$cumuldir
+      fi  
+    done  
+  done
+
+else  #if "$1" != "-d"  ,i.e. we do not create directories *****************
+  notify=0
+  for((i=$# ; $i>0; ))
+  do
+    a="$1"
+    shift 1; i=$(($i-1))
+    case "$a" in
+     -m)      set -- "$@" "$a" 
+              a="$1"
+              shift 1; i=$(($i-1))
+              case "$a" in
+                4755) notify=1 ; set -- "$@" "755" ;;
+                4775) notify=1 ; set -- "$@" "755" ;;
+                4711) notify=1 ; set -- "$@" "711" ;;
+                *) set -- "$@" "$a"  ;;
+              esac
+          ;;
+      -m4755) notify=1 ; set -- "$@" "-m755" ;;
+      -m4775) notify=1 ; set -- "$@" "-m755" ;;
+      -m4711) notify=1 ; set -- "$@" "-m711" ;;
+      -o|-g|--owner|--group)    notify=1 
+      		shift 1; i=$(($i-1))
+          	set -- "$@" 
+          ;;
+      */man/man?/*) 
+                if [ -e "$a" -a ! -O "$a" ]; then
+                  if [ `find "$a" -printf \%u` = $manpagesowner ]; then
+                    notify=1
+                    set -- "$@" not_installed
+                  else
+                    set -- "$@" "$a"
+                  fi  
+                else
+                  set -- "$@" "$a"
+                fi
+          ;;    
+      *) set -- "$@" "$a" ;;
+    esac
+  done
+
+  test $notify -eq 1 && echo 1>&2 '***' install "$cmdline"
+
+  $DAISY_CHAIN "$@" || exit $?
+fi
+
+exit 0

@@ -1,0 +1,1 @@
+/etc/pkgusr/bash_profile

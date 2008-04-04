@@ -1,0 +1,74 @@
+#!/bin/bash
+# Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+#The following list should contain the mount points of all filesystems
+#that are to be scanned as a space-separated list within parentheses. 
+#/ will usually be in this list and if you have /usr
+#on a separate partition, it will also be in this list. 
+#Mount points whose filesystems are special, such as procfs or sysfs must
+#not be in this list. While a simple find on those special filesystems should 
+#be harmless, operations such as "-exec grep something" are NOT SAFE and may 
+#have HARMFUL SIDE-EFFECTS, especially when performed as root. 
+fs_to_scan=(/)
+
+#Files with a path prefix found in the following list are ignored. As the
+#main function of this script is to help you find files that contain
+#hardwired paths to /tools or other unwanted references to
+#your build system, you will usually prune any directories that don't contain
+#files of interest, such as /tools (whose files naturally refer to /tools)
+#and your package users' home directories (which may also test positive if
+#you have unpacked and configured sources lying around).
+#NOTE: The LFS-6.0 book uses a ramfs mounted on /dev and with that setup
+#/dev does not need to be in the prune list. But since there is no requirement
+#that /dev have its on filesystem it's better to prune it explicitly.
+prune_prefixes=(/home /usr/src /dev /tools) #NO TRAILING SLASHES!!!
+
+if [ $# -lt 1 -o "$1" = "--help" ]; then
+  echo 1>&2 
+  echo 1>&2 'USAGE: '"${0##*/}"' <grep-commands>'
+  echo 1>&2 
+  echo 1>&2 '  grep -l <grep-commands> -- <file>'
+  echo 1>&2 '  will be executed for each *regular file* <file>'
+  echo 1>&2 '  ATTENTION! If you override the -l switch with a switch that makes grep'
+  echo 1>&2 '  output all individual matches rather than just the matching files,'
+  echo 1>&2 '  then DO NOT redirect output to a file that is in a directory that will be'
+  echo 1>&2 '  scanned, or you risk creating an endless loop that will cause your'
+  echo 1>&2 '  output file to grow till your disk is full.'
+  echo 1>&2 
+  exit 1
+fi
+
+#suppress ugly debug output from shell
+trap ':' SIGPIPE
+
+#construct find commands that match the prune_prefixes. Each prefix will be
+#matched as -path <prefix> -or -path <prefix>/*
+#so that the directory itself and all subdirectories are matched.
+y=(\( -false)
+for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1)) 
+do
+  y[${#y[@]}]='-or'
+  y[${#y[@]}]=-path
+  y[${#y[@]}]="${prune_prefixes[$i]}"
+  y[${#y[@]}]='-or'
+  y[${#y[@]}]=-path
+  y[${#y[@]}]="${prune_prefixes[$i]}/*"
+done
+y[${#y[@]}]=')'
+
+cmd_pre=(-type f -exec grep -l)
+cmd_post=(-- {} \;)
+
+#In the following find command, the part
+# -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
+#is responsible for preventing the files that match prune_prefixes from
+#being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
+#-prune has no effect and is always false when -depth is used (which someone
+#might do in the future).
+#The -true before "$@" ensures that -depth can be passed as 1st parameter
+#of $cmd_pre (should someone change it in the future).
+find "${fs_to_scan[@]}" -xdev -noleaf \
+     -not \( \( "${y[@]}" -prune \) -or "${y[@]}" \) \
+     -and \( -true "${cmd_pre[@]}" "$@" "${cmd_post[@]}" \)

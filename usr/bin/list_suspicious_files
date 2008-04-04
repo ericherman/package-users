@@ -1,0 +1,218 @@
+#!/bin/bash
+# Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+#The following list should contain the mount points of all filesystems
+#that are to be scanned as a space-separated list within parentheses. 
+#/ will usually be in this list and if you have /usr
+#on a separate partition, it will also be in this list. Other non-special
+#filesystems where suspicious files could be located should also be put in 
+#this list.
+#Mount points whose filesystems are special, such as procfs or sysfs should
+#not be in this list. 
+fs_to_scan=(/)
+
+#Files with a path prefix found in the following list are ignored.
+#DO !!!!NOT!!! PUT /usr/src OR WHATEVER THE HOME DIRECTORY prefix is for your
+#package users into this list!!! You DO want to scan those directories in
+#order to spot e.g. world-writable tarballs and other abominations that
+#may have crept in.
+#Ideally, this list should be empty.
+prune_prefixes=() #NO TRAILING SLASHES!!!
+
+#If the following variable is set to "yes", then files that contain
+#control characters or other non-printable characters (except for space)
+#will be reported as suspicious. 
+#This test slows down the search considerably!
+enable_illchars=yes
+
+
+#suppress ugly debug output from shell
+trap ':' SIGPIPE
+
+#"-false" as 1st argument is used when called by list_suspicious_files_from
+if [ $# -ge 1 -a "$1" != "-false" ]; then
+  echo 1>&2 
+  echo 1>&2 "USAGE: ${0##*/}"
+  echo 1>&2 
+  echo 1>&2 '  Outputs a categorized list of files and directories with properties'
+  echo 1>&2 '  that could mean trouble and should be investigated.'
+  echo 1>&2
+  exit 1
+fi
+
+
+usergroupmatch=(-true)
+if [ "$1" = "-false" ]; then
+  usergroupmatch=(\( "$@" \))
+fi
+
+#construct find commands that match the prune_prefixes. Each prefix will be
+#matched as -path <prefix> -or -path <prefix>/*
+#so that the directory itself and all subdirectories are matched.
+y=(\( -false)
+for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1)) 
+do
+  y[${#y[@]}]='-or'
+  y[${#y[@]}]=-path
+  y[${#y[@]}]="${prune_prefixes[$i]}"
+  y[${#y[@]}]='-or'
+  y[${#y[@]}]=-path
+  y[${#y[@]}]="${prune_prefixes[$i]}/*"
+done
+y[${#y[@]}]=')'
+
+illchars=( $'\x1'  $'\x2'  $'\x3'  $'\x4'  $'\x5'  $'\x6'  $'\x7'  $'\x8'  
+  $'\x9'  $'\xA'  $'\xB'  $'\xC'  $'\xD'  $'\xE'  $'\xF'  $'\x10'  $'\x11' 
+  $'\x12'  $'\x13'  $'\x14'  $'\x15'  $'\x16'  $'\x17'  $'\x18'  $'\x19'  
+  $'\x1A'  $'\x1B'  $'\x1C'  $'\x1D'  $'\x1E'  $'\x1F'  $'\x7f' $'\x80' 
+  $'\x81'  $'\x82'  $'\x83'  $'\x84'  $'\x85'  $'\x86'  $'\x87'  $'\x88'  
+  $'\x89'  $'\x8A'  $'\x8B'  $'\x8C'  $'\x8D'  $'\x8E'  $'\x8F'  $'\x90'  
+  $'\x91'  $'\x92'  $'\x93'  $'\x94'  $'\x95'  $'\x96'  $'\x97'  $'\x98'  
+  $'\x99'  $'\x9A'  $'\x9B'  $'\x9C'  $'\x9D'  $'\x9E'  $'\x9F' ) 
+
+
+if [ "$enable_illchars" = yes ]; then
+
+  illname=(\( -false)
+  for ((i=0; $i<${#illchars[@]}; i=$i+1)) 
+  do
+    #handle bash \x7f error
+    if [ "*${illchars[$i]}*" = "**" ]; then
+      illchars[$i]=$'\x80'  #'
+    fi
+    illname[${#illname[@]}]='-or'
+    illname[${#illname[@]}]=-name
+    illname[${#illname[@]}]="*${illchars[$i]}*"
+  done
+  illname[${#illname[@]}]=')'
+
+  illlink=(\( -false)
+  for ((i=0; $i<${#illchars[@]}; i=$i+1)) 
+  do
+    illlink[${#illlink[@]}]='-or'
+    illlink[${#illlink[@]}]=-lname
+    illlink[${#illlink[@]}]="*${illchars[$i]}*"
+  done
+  illlink[${#illlink[@]}]=')'
+else #if [ "$enable_illchars" = no ]
+  illlink=(-false)
+  illname=(-false)
+fi
+
+# $1=section heading
+# $2=inode message
+report()
+{
+  echo -printf "increment_code_here"
+  echo -printf 
+  echo "1 ${1}\\n" | sed 's/ /\\040/g'
+  echo -printf "insert_code_here"
+  
+  if [ -n "$2" ]; then
+    echo -printf 
+    echo "2 %i 1 ${2}\\n" | sed 's/ /\\040/g'
+    echo -printf "insert_code_here"
+    echo -printf 
+    echo "2 %i 2 " | sed 's/ /\\040/g'
+  else
+    echo -printf "2\\040" 
+  fi
+  
+  echo -exec ls -T 0 -ladQ {} \;
+}
+
+
+filegoodperm=(\( -perm 644 -or -perm 755 -or -perm 555 -or -perm 444 -or -perm 600 -or -perm 700 -or -perm 640 \))
+dirgoodperm=(\( -perm 755 -or -perm 555 -or -perm 700 -or -perm 750 \))
+
+good=( \( 
+          -not \( -not -type d -links +1 \)
+          -not -nouser -not -nogroup 
+          -not \( "${illname[@]}" \) 
+          -not \( "${illlink[@]}" \) 
+       \) 
+       -and
+\(
+      \( -type f -not -group install "${filegoodperm[@]}" \) 
+  -or \( -type d -not -group install "${dirgoodperm[@]}" \)
+  -or \( -type d -group install \( -perm 1775 \) \)
+  -or \( -type d -group root -user root -path "/tmp" \( -perm 1777 \) \)
+  -or \( -type d -group root -user root -path "/var/tmp" \( -perm 1777 \) \)
+  -or \( -not -type d -not -type f -not -type l -path "/dev/*" \)
+  -or \( -type l \( -xtype b -or -xtype c -or -xtype d -or -xtype p -or -xtype f \) \)
+\)
+)
+
+bad=(
+    \( "${illname[@]}" $(report  "NON-PRINTABLE CHAR IN NAME")  \)
+ OP \( "${illlink[@]}" $(report  "NON-PRINTABLE-CHAR IN LINK-TARGET")  \)
+ OP \( -type f -perm +4000 $(report  "SETUID FILES")  \)
+ OP \( -type f -perm +2000 $(report  "SETGID FILES")  \)
+ OP \( -type f -perm +1000 $(report  "STICKY FILES")  \)
+ OP \( -type d -perm +2000 $(report  "GROUP-KEEPING DIRECTORIES")  \)
+ OP \( -type d -not -group install -perm +1000  $(report  "STICKY DIRECTORIES")  \)
+ OP \( -type f -perm +g+w  $(report  "GROUP-WRITABLE FILES")  \)
+ OP \( -type f -perm +o+w  $(report  "WORLD-WRITABLE FILES")  \)
+ OP \( -type d -perm +g+w  $(report  "GROUP-WRITABLE DIRECTORIES")  \)
+ OP \( -type d -perm +o+w  $(report  "WORLD-WRITABLE DIRECTORIES")  \)
+ OP \( -not \( -type f -or -type l -or -type d \) -not -path "/dev/*"  $(report  "SPECIAL FILES OUTSIDE /dev")  \)
+ OP \( -type d -group install -not -perm 1755  $(report  "INSTALL DIRECTORIES WITH UNUSUAL PERMISSIONS")  \)
+ OP \( -type f -group install $(report  "FILES ASSIGNED TO GROUP INSTALL")  \)
+ OP \( -type l -not \( -xtype b -or -xtype c -or -xtype d -or -xtype p -or -xtype f \) $(report  "SYMLINKS POSSIBLY BROKEN OR LOOP")  \)
+ OP \( -not -type d -links +1 $(report "HARDLINKED FILES" "Inode %i is shared by %n files, including") \)
+ OP \( -nouser  $(report  "THINGS HAVING UID WITH NO ASSIGNED USER NAME")  \)
+ OP \( -nogroup  $(report  "THINGS HAVING GID WITH NO ASSIGNED GROUP NAME")  \)
+ OP \( -type f -not -group install -not "${filegoodperm[@]}"  $(report  "FILES WITH UNUSUAL PERMISSIONS")  \)
+ OP \( -type d -not -group install -not "${dirgoodperm[@]}"  $(report  "DIRECTORIES WITH UNUSUAL PERMISSIONS")  \)
+)
+
+#insert unique codes for the messages
+code=100
+for ((i=0; $i<${#bad[@]}; i=$i+1)) 
+do
+  if [ "${bad[$i]}" = "increment_code_here" ]; then
+    code=$(($code + 1))
+    bad[$i]=$code
+  elif [ "${bad[$i]}" = "insert_code_here" ]; then
+    bad[$i]=$code
+  fi
+done
+
+allbad=()  #all bad matches are reported
+onebad=()  #only the first bad match is reported
+for ((i=0; $i<${#bad[@]}; i=$i+1)) 
+do
+  if [ "${bad[$i]}" = "OP" ]; then
+    allbad[$i]=","
+    onebad[$i]="-or"
+  else
+    allbad[$i]="${bad[$i]}"
+    onebad[$i]="${bad[$i]}"
+  fi
+done
+
+#Add a default case to onebad.
+#This should never be hit, because the explicit cases should catch all
+#files, but just in case I've missed something, this will catch it.
+onebad=("${onebad[@]}" -or  $(report  "WEIRD SHIT") )
+
+#make allbad always return false
+allbad=("${allbad[@]}" , -false)
+
+cmd=( "${usergroupmatch[@]}" -and
+     \( \( "${good[@]}" \) -or \( "${allbad[@]}" \) -or \( "${onebad[@]}" \) \)
+    )
+
+#In the following find command, the part
+# -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
+#is responsible for preventing the files that match prune_prefixes from
+#being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
+#-prune has no effect and is always false when -depth is used.
+find "${fs_to_scan[@]}" -xdev -noleaf \
+     -not \( \( "${y[@]}" -prune \) -or "${y[@]}" \) \
+     -and \( "${cmd[@]}" \) | 
+sed 's/^\(...2\) \([0-9]\+ 2 \)\?\([^ ]\+\) \+[^ ]\+ \+\([^ ]\+\) \+\([^ ]\+\) \+[^"]\+\(".\+\)/\1 \2\3 \6  \4:\5/' |
+sort -u | 
+sed 's/^...1 /\'$'\n''/;s/^...2 [0-9]\+ 1 /\'$'\n''  /;s/^...2 [0-9]\+ 2 /    /;s/^...2 /  /'

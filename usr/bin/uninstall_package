@@ -1,0 +1,31 @@
+#!/bin/sh
+# Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# != 1 -o "$1" = '--help' ]; then
+  echo 1>&2 'USAGE: uninstall_package <package-name>'
+  exit 1
+fi
+echo
+echo '# If package '"$1"' has setuid root binaries, then you need to be'
+echo '# root for the following to work.'
+echo '# Otherwise, you can do it as user '"$1"'.'
+echo
+echo 'forall_direntries_from "'"$1"'" -depth \( -type d -exec echo rmdir {} \; \) -or \( -not -type d -exec echo rm -f {} \; \)'
+echo
+echo '# After successfully deleting all files, you may want to remove the'
+echo '# package user '"$1"'. But remember that if you do that you need to'
+echo '# remove or change ownership of '"$(eval echo ~"$1")"'. Unless you are'
+echo '# certain that you will never re-install '"$1"', it is probably better to'
+echo '# just keep the package user '"$1"' and its home directory around.'
+echo '# Anyway, if you want to delete the account, you can use the following'
+echo '# command:'
+echo 
+echo 'userdel "'"$1"'"'
+echo
+echo '# If your /etc/login.defs has USERGROUPS_ENAB set to "yes" (the default),'
+echo '# then userdel will automatically delete the package user'"'"'s group if'
+echo '# its name is identical to the user name. Otherwise, if you want to delete'
+echo '# the package user'"'"'s group, you will need to use the `groupdel'"'"' command.'
+echo

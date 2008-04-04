@@ -1,0 +1,286 @@
+#!/bin/bash
+# Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# -lt 1 -o \( $# -gt 1 -a "z$1" != "z:man" -a "z$1" != "z:mani" -a "z$1" != "z:lib" \) -o "$1" = "--help" ]; then
+  echo 1>&2
+  echo 1>&2 'USAGE: '"${0##*/}"' <user_or_group_name>'
+  echo 1>&2
+  echo 1>&2 '  Entries will be matched if group and/or user equals <user_or_group_name>'
+  echo 1>&2 '    (numeric UID/GID allowed).'
+  echo 1>&2 '  This script uses `forall_direntries_from'"'"' and `list_suspicious_files_from'"'."
+  echo 1>&2
+  echo 1>&2 '  NOTE: Several minutes may pass before you see the first output.'
+  echo 1>&2 '  You should probably redirect output to a file for later reference.'
+  echo 1>&2
+  echo 1>&2 '  WARNING! This program is for listing files from package users only!'
+  echo 1>&2 '           Do NOT use it to list files from untrusted users!'
+  echo 1>&2 '           An untrusted user could set up a manipulated manpage to exploit'
+  echo 1>&2 '           a bug in man when it is used to extract the summary!'
+  exit 1
+fi
+
+# KNOWN BUGS:
+#  - when extracting summaries from manpages, candidate manpages are considered
+#    in alphabetic order rather than the order used by the man command.
+#    The problem with this is that section 8, which contains manpages for
+#    admin commands, will be considered after lower-numbered sections.
+#    In the rare case that an admin command has the same name as a topic from
+#    a lower-numbered manpage installed by the same package, the summary will
+#    be taken from the wrong manpage.
+#    An example for such a clash are the faillog.5 and faillog.8 manpages from
+#    the shadow package.
+#    Because this problem is difficult to fix, rare and easily spotted (since
+#    the manpage that should have provided the summary will be listed under
+#    EXTRA MANPAGES) I won't fix it.
+
+ugname="$1"
+
+#suppress ugly debug output from shell
+trap ':' SIGPIPE
+
+if [ $# -gt 1 ]; then
+  name="${2##*/}"
+  case "$1" in
+    :man) 
+      name=${name%.gz}
+      name=${name%.bz2}
+      name=${name%.*}
+      echo $'command\2'"$name"$'\2man\2'"$2" ;;
+    :mani) 
+      name=${name%.gz}
+      name=${name%.bz2}
+      name=${name%.*}
+      echo $'command\2'"$name"$'\2mani\2'"$2" ;;
+    :lib) 
+      name=${name%.a}
+      name=${name%%.so*}
+      echo "lib $name" 
+      ;;
+  esac
+  exit 0
+fi
+
+sanitize() { tr -c '[:print:]' '?' ; }
+
+# $1: <commandname>
+# $2: command\2<commandname>\2cmd\2(-><linktarget>)
+# $3: command\2<commandname>\2man[i]\2<manpage_path>  or  <empty>
+expand_command()
+{
+  sep=$'\2'
+  cmdname="$1"
+  cmdline="$2"
+  manline="$3"
+  linktarget="${cmdline##*${sep}}"
+  
+  if [ -z "$manline" ]; then
+    description='No manpage'
+    #the "l" at the beginning is just to make it sort after "lib"
+    echo -n "lmanlessbin $cmdname" | sanitize
+    echo 
+    
+  else # if [ ! -z "$manline" ]; then
+    manpage=${manline##*${sep}}
+    wsc='[[:space:],]\+'
+    # The `t l;d;:l;n;b l' in the sed command is voodoo magic to make sed
+    # output only the first match but to keep eating up all input. I use this
+    # instead of  `| head -n 1', because head breaks the pipe after doing
+    # its 1 line output, which (if it happens before sed has processed the
+    # complete input) freaks out man and causes it to emit a totally
+    # silly error message including "No such file or directory", which is
+    # annoying when you do testing without suppressing man's errors.
+    # The $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' removes the backspace-based 
+    # as well as ESC-based formatting from man's output. 
+    description="$( { COLUMNS=300 man "$manpage" 2>/dev/null || 
+                                      echo " $name - Broken manpage" ; } | 
+       sed $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' |
+       sed -n "/^NAME/,/^[A-Z]/s/^.*${wsc}${cmdname}${wsc}.*-\+${wsc}\(.*\)/\1/p;t l;d;:l;n;b l" )"
+    if [ -z "$description" ]; then
+      description="$( COLUMNS=300 man "$manpage" 2>/dev/null |
+        sed $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' |
+        sed -n "s/^.*${wsc}..*${wsc}.*-\+${wsc}\(.*\)/\1/p;t l;d;:l;n;b l" )"
+    fi
+    test -z "$description" && description="Weird manpage"
+  fi
+
+  echo -n "binexe $cmdname" | sanitize
+  test "$linktarget" != '(->)' && echo -n "$linktarget" | sanitize
+  echo 
+  #the "lx" in "lxdescription" is just to make sure it sorts after "lmanlessbin"
+  echo -n "lxdescription $cmdname: $description" | sanitize  
+  echo 
+}
+
+# NOTE: The -path and -lname stuff at the beginning of the following is
+# there to make sure that none of the lines output by find contains
+# a) \n or \r, because that would mess up post-processing the output 
+#    line-by-line.
+# b) \x7f, because this character triggers one of the nastier bash-bugs
+#    wrt string handling
+# c) \2, because I use this as separator within the lines
+#    (Why \2 and not \0 or \1 ? Because bash can't cope with \0 at all and has
+#    bugs related to \1.)
+#
+# Because of this, having the final section called "ALL FILES" is technically
+# a lie, because files with a path containing one of the abovementioned
+# characters will not appear in output.
+# However, a) no sane package contains such files
+#          b) they will be listed in the output from list_suspicious_files
+cmd=(\( -path $'*\n*' -or -path $'*\r*' -or -path $'*\x7f*' 
+        -or -path $'*\2*'
+        -or -lname $'*\n*' -or -lname $'*\r*' -or -lname $'*\x7f*' 
+        -or -lname $'*\2*' 
+     \) 
+     -or
+     \(
+       \( -printf "zall %p\n" \) ,
+       \(
+         \( -type f -or -xtype f \) -and
+         \(
+           \( -perm +u+x \( -path "*/bin/*" -or -path "*/sbin/*" \) -printf 'command\2%f\2cmd\2(->%l)\n' \)
+       -or \( -path "*/man/man*/*" -exec "$0" ":man" {} \; \)
+       -or \( -path "*/man/*/man*/*" -exec "$0" ":mani" {} \; \)
+       -or \( \( -name "lib*.so" -or -name "lib*.a" -or -name "lib*.so.*" \) -path "*/lib/*" -exec "$0" ":lib" {} \; \)
+       -or \( -type f -perm +u+x -not \( \( -name "lib*.so" -or -name "lib*.a" -or -name "lib*.so.*" \) -path "*/lib/*" \)  -printf "nobinexe %p\n" \)
+         \)
+       \)  
+     \)
+    )
+
+forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
+{
+  sep=$'\2'
+  hold=''
+  for((;;)) 
+  do
+    if [ -z "$hold" ]; then
+      read -r line || break
+    else
+      line="$hold"
+      hold=''
+    fi
+    
+    case "z$line" in
+      zcommand${sep}*${sep}cmd${sep}*) 
+        cmdname=${line#command${sep}}
+        cmdname=${cmdname%%${sep}*}
+        read -r hold
+        case "z$hold" in
+          zcommand${sep}${cmdname}${sep}man${sep}*|zcommand${sep}${cmdname}${sep}mani${sep}*) 
+            expand_command "$cmdname" "$line" "$hold"
+            hold=''
+          ;;
+          
+          z*) 
+            expand_command "$cmdname" "$line" ""
+          ;;
+        esac
+        ;;
+
+      zcommand${sep}*${sep}man${sep}*|command${sep}*${sep}mani${sep}*) 
+         
+        echo -n "manextra ${line##*${sep}}" | sanitize
+        echo
+        ;;
+
+      z*) 
+        echo -n "$line" | sanitize
+        echo
+        ;;
+    esac
+    
+  done
+} | sort |  #no -u here, bc. the above processing may equalize different files
+{
+# (1) binexe: Executables (in *bin/)
+# (2) lib: Libraries (in *lib/*)
+# (3) lmanlessbin: Executables (in *bin/) without manpages
+# (4) lxdescription: Summaries for executables (in *bin/)
+# (5) manextra: Extra manpages
+#     full paths, no perms
+# (6) nobinexe: Executables not in *bin/ (excluding *lib/*.so and *lib/*.so.*)
+#     full paths, no perms
+# (7) zall: All files
+#     full paths, no perms
+
+  curstate=''
+  while read -r line
+  do
+    newstate="${line%% *}"
+    if [ "$newstate" != "$curstate" ]; then
+      curstate="$newstate"
+      case "$curstate" in
+        binexe)
+          echo 'EXECUTABLES (in */bin or */sbin)'
+          echo -n "  ${line#binexe }"
+          ;;
+        lib)
+          echo
+          echo
+          echo 'LIBRARIES (lib*.a or lib*.so)'
+          echo -n "  ${line#lib }"
+          ;;
+        lmanlessbin)
+          echo
+          echo
+          echo 'EXECUTABLES WITH NO MANPAGE (in */bin or */sbin)'
+          echo -n "  ${line#lmanlessbin }"
+          ;;
+        lxdescription)
+          echo
+          echo
+          echo 'MANPAGE SUMMARIES OF EXECUTABLES (in */bin or */sbin)'
+          echo "  ${line#lxdescription }"
+          ;;
+        manextra)
+          echo
+          echo 'EXTRA MANPAGES'
+          echo "  ${line#manextra }"
+          ;;
+        nobinexe)
+          echo
+          echo 'EXTRA EXECUTABLES (not in */bin or */sbin)'
+          echo "  ${line#nobinexe }"
+          ;;
+        zall)
+          echo
+          echo 'ALL FILES'
+          echo "  ${line#zall }"
+          ;;
+        *) 
+          echo
+          echo
+          echo 'UNEXPECTED LINE'
+          echo "  $line"
+          ;;
+        
+      esac
+    else
+      case "$curstate" in
+        binexe) echo -n ", ${line#binexe }" 
+          ;;
+        lib) echo -n ", ${line#lib }" 
+          ;;
+        lmanlessbin) echo -n ", ${line#lmanlessbin }" 
+          ;;
+        lxdescription) echo "  ${line#lxdescription }" 
+          ;;
+        manextra) echo "  ${line#manextra }" 
+          ;;
+        nobinexe) echo "  ${line#nobinexe }" 
+          ;;
+        zall) echo "  ${line#zall }" 
+          ;;
+        *) 
+          echo
+          echo 'UNEXPECTED LINE'
+          echo "  $line"
+          ;;
+      esac
+    fi
+  done
+} 
+
+list_suspicious_files_from "$ugname"

@@ -1,0 +1,27 @@
+This is Random's modified version of the original Package Users
+helper scripts from Matthias S Benkmann, described in the "more
+control and package management using package users" LFS hint.
+
+http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt
+
+You can use the Makefile here to install the initial Package
+Users stuff -- have a look, it is not doing anything particularly
+odd.  If you want to use the Makefile approach, you might have to
+modify it first -- it assumes that the install group will be GID
+9999, and the package users helpers will be installed as
+"package-users" with UID and GID 10000.
+
+You might want to modify UID_MAX and GID_MAX in /etc/login.defs
+to 9997 so that useradd and groupadd won't allocate values in the
+package users range. (User "ldconfig" is uid 9998 gid 9998)
+
+
+TODO: 
+
+these will help with automation...
+
+- add an environment variable BUILD_DIR; default should be source 
+  directory.  create (if necessary) and cd to BUILD_DIR before
+  performing configure/make/test/install
+- add function unpack_source
+

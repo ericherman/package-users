@@ -1,0 +1,9 @@
+# override CFLAGS, CXXFLAGS, or other environment variables here
+# as needed.
+#
+# if necessary, redefine the build functions: 
+#   configure_commands, make_commands, test_commands, install_commands
+# look at ~/.bash_profile for syntax
+# run "declare -f" to find out the current function definitions
+#
+# If you don't need to set anything here, just delete it!

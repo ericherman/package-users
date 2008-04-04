@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Go through /etc/pkgusr/install_dirs.  For each entry, if it
+# exists and is a directory, set it as an install dir.  If the
+# entry ends in "/*", then set all of its subdirectories as
+# install directories as well.
+
+set -f
+
+function set_dir_entries()
+{
+    while read DIRENTRY
+    do
+        if [ ${DIRENTRY%%/\*} = $DIRENTRY ]
+        then
+            if [ -d $DIRENTRY ]
+            then
+                chgrp install $DIRENTRY
+                chmod 1775 $DIRENTRY
+            fi
+        else
+            DIR=${DIRENTRY%%/\*}
+            if [ -d $DIR ]
+            then
+                find $DIR -type d -exec chgrp install {} \;
+                find $DIR -type d -exec chmod 1775 {} \;
+            fi
+        fi
+    done
+}
+
+cat /etc/pkgusr/install_dirs | set_dir_entries
