@@ -23,5 +23,7 @@ these will help with automation...
 - add an environment variable BUILD_DIR; default should be source 
   directory.  create (if necessary) and cd to BUILD_DIR before
   performing configure/make/test/install
-- add function unpack_source
-
+- add function prepare_source
+- fix the makefile so that the system directories (e.g. /etc
+  /usr /usr/bin etc) aren't owned by pkgusr or in the pkgusr
+  group.
