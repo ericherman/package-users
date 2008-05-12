@@ -4,14 +4,13 @@
 # overwritten by the final versions of the files once the
 # appropriate package is built.  Run create-lfs-users first.
 
-chown -h gcc:gcc /usr/lib/libgcc_s* /usr/lib/libstdc++* &&
-chown -h coreutils:coreutils /bin/{rm,cat,pwd,stty} &&
-chown -h bash:bash /bin/{bash,sh} &&
+chown -h gcc:gcc /usr/lib/libgcc_s* /usr/lib/libstdc++*
+chown -h coreutils:coreutils /bin/{rm,cat,pwd,stty}
+chown -h bash:bash /bin/{bash,sh}
 chown -h grep:grep /bin/grep
-chown -h perl:perl /usr/bin/perl &&
-chown -h file:file /usr/bin/file &&
-chown -h e2fsprogs:e2fsprogs /sbin/e2fsck /sbin/fsck.ext? &&
-
+chown -h perl:perl /usr/bin/perl
+chown -h file:file /usr/bin/file
+chown -h e2fsprogs:e2fsprogs /sbin/e2fsck /sbin/fsck.ext?
 chown shadow:shadow /etc/{login.defs,login.access,limits}
 chown -R shadow:shadow /etc/default
 
