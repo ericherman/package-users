@@ -1,7 +1,14 @@
 #!/bin/bash
 #
-# This build script is meant to be executed from within the source directory
-# created by extracting the tarball.
+# This build script is meant to be executed either from within
+# the source directory created by extracting the tarball, or from
+# the package user's home directory.
+#
+# If run from the home directory, there should be a source
+# tarball in $HOME/src; it will be unpacked.  The top-level
+# directory created by unpacking the tarball should start with
+# the package user name.  Then, if there are patches in a
+# directory $HOME/patches, they will be applied.
 #
 # It will create 8 log files in the $HOME directory:
 #   00-configure.log: All messages output during configure
@@ -16,6 +23,15 @@
 # After running the script you should check the *.err files to see
 # if any problems have occurred. If that is the case, use the corresponding
 # *.log files to see the error messages in context.
+
+function apply_patches()
+{
+    PATCHDIR="${HOME}/patches"
+    for PATCH in ${PATCHDIR}/*
+    do
+        patch -p1 < $PATCH || exit 3
+    done
+}
 
 function run_stage()
 {
@@ -35,8 +51,36 @@ function run_stage()
     return 0
 }
 
+# if we are in home directory, as opposed to source or build
+# directory, try to prepare the source directory and switch to it.
+if [ ${PWD} = ${HOME} ]
+then
+    if [ ! -d "${HOME}/src" ]
+    then
+        echo "There is no source directory! Prepare the source manually."
+        exit 1
+    fi
+    SOURCEDIR="${HOME}/src"
+    if [ -f "${SOURCEDIR}/*.lzma" ]
+    then
+        lzma -d < ${SOURCEDIR}/*.lzma | tar xf -
+    else
+        tar xf ${SOURCEDIR}/*.tar*
+    fi
+    cd "${USER}*" || exit 2
+    if [ -d "${HOME}/patches" ]
+    then
+        apply_patches
+    fi
+fi
+
+if [ -n "${BUILD_DIR}" ]
+then
+    mkdir -p ${BUILD_DIR}
+    cd ${BUILD_DIR}
+fi
+
 run_stage 'configure' 00 'configure_commands'
 run_stage 'build' 01 'make_commands'
 run_stage 'test' 02 'test_commands'
 run_stage 'install' 03 'install_commands'
-

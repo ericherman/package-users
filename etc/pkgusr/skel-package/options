@@ -1,9 +1,23 @@
 # override CFLAGS, CXXFLAGS, or other environment variables here
 # as needed.
 #
-# if necessary, redefine the build functions: 
-#   configure_commands, make_commands, test_commands, install_commands
-# look at ~/.bash_profile for syntax
-# run "declare -f" to find out the current function definitions
+# If the package needs to be built from a directory other than
+# the source directory, set BUILD_DIR appropriately (for example:
+# 'BUILD_DIR=../build-binutils')
 #
-# If you don't need to set anything here, just delete it!
+# You may copy a source tarball into a "src" subdirectory, and
+# put patches into a "patches" subdirectory, in which case the
+# build script will unpack and patch the source for you.
+# Alternatively, you can prepare the source yourself (and cd into
+# the source directory) before running build.
+#
+# If necessary, redefine the build functions: 
+#   configure_commands, make_commands, test_commands, install_commands
+#
+# Look at ~/.bash_profile for syntax help.  Re-source the options
+# file afterward!
+#
+# Run "declare -f" to find out the current function definitions.
+#
+# If you don't need to set anything here, just delete it entirely!
+
