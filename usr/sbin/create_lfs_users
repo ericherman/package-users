@@ -5,12 +5,14 @@ add_package_user "Linux Kernel Headers" kernel-headers &&
 add_package_user "Manual pages" man-pages &&
 add_package_user "GNU libc" glibc &&
 add_package_user "GNU binutils" binutils &&
+add_package_user "GNU m4 macro processor" m4 &&
+add_package_user "GNU multi-precision arithmetic library" gmp &&
+add_package_user "MPFR math library" mpfr &&
 add_package_user "GNU compiler collection" gcc &&
 add_package_user "GNU Stream EDitor" sed &&
 add_package_user "ext2 filesystem programs" e2fsprogs &&
 add_package_user "GNU core utilities" coreutils &&
 add_package_user "IANA etc files" iana-etc &&
-add_package_user "GNU m4 macro processor" m4 &&
 add_package_user "GNU bison" bison &&
 add_package_user ncurses ncurses &&
 add_package_user procps procps &&
