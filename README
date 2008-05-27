@@ -15,15 +15,15 @@ You might want to modify UID_MAX and GID_MAX in /etc/login.defs
 to 9997 so that useradd and groupadd won't allocate values in the
 package users range. (User "ldconfig" is uid 9998 gid 9998)
 
+The file etc/pkgusr/bash_profile contains the default CFLAGS and
+CHOST, which contain the default compiler optimization flags to
+use when building packages.  Adjust those to taste.
 
-TODO: 
-
-these will help with automation...
-
-- add an environment variable BUILD_DIR; default should be source 
-  directory.  create (if necessary) and cd to BUILD_DIR before
-  performing configure/make/test/install
-- add function prepare_source
-- fix the makefile so that the system directories (e.g. /etc
-  /usr /usr/bin etc) aren't owned by pkgusr or in the pkgusr
-  group.
+After installing the package users scripts, run
+/usr/sbin/create_lfs_users and /usr/sbin/chown_lfs_symlinks.
+That will set things up so that the standard LFS packages already
+have users set up, and the symlinks that point into /tools will
+be correctly owned so they can be clobbered by the real files as
+they are built.  Also run set_install_dirs -- and re-run it after
+every package installation, in case the package created any new
+install directories.

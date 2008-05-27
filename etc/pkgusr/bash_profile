@@ -44,6 +44,11 @@ function install_commands()
 if [ -x "$HOME/options" ]
 then
     . $HOME/options
+else
+    if [ -f "$HOME/options" ]
+    then
+        echo "options file exists but is not executable!  Please fix that."
+    fi
 fi
 
 export -f configure_commands make_commands test_commands install_commands

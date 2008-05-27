@@ -3,7 +3,7 @@
 #
 # If the package needs to be built from a directory other than
 # the source directory, set BUILD_DIR appropriately (for example:
-# 'BUILD_DIR=../build-binutils')
+# 'export BUILD_DIR=../build-binutils')
 #
 # You may copy a source tarball into a "src" subdirectory, and
 # put patches into a "patches" subdirectory, in which case the
