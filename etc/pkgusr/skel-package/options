@@ -14,10 +14,15 @@
 # If necessary, redefine the build functions: 
 #   configure_commands, make_commands, test_commands, install_commands
 #
+# If this package has external dependencies, such as requiring
+# special users or groups to exist, verify that the dependencies
+# are met in initial_checkup (echo problem notifications and exit
+# if they are not).
+#
 # Look at ~/.bash_profile for syntax help.  Re-source the options
 # file afterward!
 #
 # Run "declare -f" to find out the current function definitions.
 #
-# If you don't need to set anything here, just delete it entirely!
-
+# If you don't need to set anything in the options file, just
+# delete it entirely!

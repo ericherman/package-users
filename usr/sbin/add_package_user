@@ -205,6 +205,13 @@ fi
 useradd -c "${description}" -d ${home} -g ${gname} -G install \
         -s /bin/bash -u ${u} ${name}  || exit 1
 
+# We don't need mail spools for package users, but useradd insists on
+# creating them.
+if [ -f /var/mail/${name} ]
+then
+  rm -f /var/mail/${name}
+fi
+
 mkdir -p $home || exit 1
 
 yes n|cp -ai -R ${skel}/{[^.],.[^.],..?}* ${home} 2>/dev/null >/dev/null

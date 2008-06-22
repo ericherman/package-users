@@ -1,26 +1,30 @@
 # The wrappers directory must be the first entry in the PATH.
 export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 
-# The /tools/bin directory must be the last entry in the PATH.  This 
-# can (and should) be removed after the LFS build is complete 
-# (and /tools is no longer needed)
+# The /tools/bin directory must be the last entry in the PATH.
+# This should be removed after the LFS build is complete (at
+# which point /tools is no longer needed and should be deleted).
 export PATH=${PATH}:/tools/bin
 
 # Make prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
 
 # Add optimizations by default.  Unset or override these
-# variables globally here, and on a per-package basis by modifying
-# ~/options.
+# variables globally here, and on a per-package basis by
+# modifying ~/options.
 export CHOST="i686-pc-linux-gnu"
 export CFLAGS="-march=prescott -O3 -pipe -fomit-frame-pointer"
 export CXXFLAGS="${CFLAGS}"
 
-# add more pkgconfig dirs as they are created.
+# add more pkg-config dirs as they are created.
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig
 
 # default build commands -- override these in $HOME/options as
 # needed for particular packages.
+function initial_checkup()
+{ :
+}
+
 function configure_commands()
 {
   ./configure --prefix=/usr
@@ -51,8 +55,8 @@ else
     fi
 fi
 
+export -f initial_checkup 
 export -f configure_commands make_commands test_commands install_commands
 
 # Go to the home directory whenever we su to a package user.
 cd
-
