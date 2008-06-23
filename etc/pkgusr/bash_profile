@@ -1,10 +1,11 @@
 # The wrappers directory must be the first entry in the PATH.
 export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 
-# The /tools/bin directory must be the last entry in the PATH.
-# This should be removed after the LFS build is complete (at
-# which point /tools is no longer needed and should be deleted).
-export PATH=${PATH}:/tools/bin
+# The /tools binary directories must be the last part of the
+# PATH, and should be removed entirely after the LFS build is
+# complete (at which point /tools is no longer needed and should
+# be deleted).
+export PATH=${PATH}:/tools/bin:/tools/sbin
 
 # Make prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
