@@ -4,10 +4,10 @@
 add_package_user "Linux Kernel Headers" kernel-headers &&
 add_package_user "Manual pages" man-pages &&
 add_package_user "GNU libc" glibc &&
-add_package_user "GNU binutils" binutils &&
 add_package_user "GNU m4 macro processor" m4 &&
 add_package_user "GNU multi-precision arithmetic library" gmp &&
 add_package_user "MPFR math library" mpfr &&
+add_package_user "GNU binutils" binutils &&
 add_package_user "GNU compiler collection" gcc &&
 add_package_user "GNU Stream EDitor" sed &&
 add_package_user "ext2 filesystem programs" e2fsprogs &&
@@ -39,7 +39,6 @@ add_package_user kbd kbd &&
 add_package_user less less &&
 add_package_user "GNU make" make &&
 add_package_user "manual viewer" man &&
-add_package_user mktemp mktemp &&
 add_package_user "module init tools" module-tools &&
 add_package_user "GNU patch" patch &&
 add_package_user psmisc psmisc &&
