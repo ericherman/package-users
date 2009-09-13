@@ -66,6 +66,7 @@
 /usr/share/locale/*
 /usr/share/man/*
 /usr/share/mime/*
+/usr/share/misc
 /usr/share/pixmaps
 /usr/share/sounds
 /usr/share/terminfo
