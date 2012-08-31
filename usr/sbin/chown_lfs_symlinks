@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# chown the symlinks that point to /tools so that they can be
+# chown the symlinks that point into /tools so that they can be
 # overwritten by the final versions of the files once the
 # appropriate package is built.  Run create-lfs-users first.
 

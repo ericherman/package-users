@@ -4,6 +4,11 @@ control and package management using package users" LFS hint.
 
 http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt
 
+Before installing the package users material, make sure there is
+a version of useradd and groupadd set up -- this is best done by
+installing a temporary version of the shadow package, with 
+configure directives --sysconfdir=/etc and --prefix=/tools.
+
 You can use the Makefile here to install the initial Package
 Users stuff -- have a look, it is not doing anything particularly
 odd.  If you want to use the Makefile approach, you might have to
@@ -14,6 +19,9 @@ modify it first -- it assumes that the install group will be GID
 You might want to modify UID_MAX and GID_MAX in /etc/login.defs
 to 9997 so that useradd and groupadd won't allocate values in the
 package users range. (User "ldconfig" is uid 9998 gid 9998)
+
+You might want to remove the GROUP line from /etc/default/useradd
+as well.
 
 The file etc/pkgusr/bash_profile contains the default CFLAGS and
 CHOST, which contain the default compiler optimization flags to
