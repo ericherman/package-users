@@ -17,6 +17,10 @@ function set_dir_entries()
             then
                 chgrp install $DIRENTRY
                 chmod 1775 $DIRENTRY
+            elif [ -e $DIRENTRY ]
+            then
+                chgrp install $DIRENTRY
+                chmod g+w $DIRENTRY
             fi
         else
             DIR=${DIRENTRY%%/\*}
