@@ -24,7 +24,11 @@
 # if any problems have occurred. If that is the case, use the corresponding
 # *.log files to see the error messages in context.
 
-initial_checkup || (echo "aborting!"; exit 1)
+if ! initial_checkup 
+then
+    echo "aborting!"
+    exit 1
+fi
 
 function apply_patches()
 {
