@@ -14,3 +14,5 @@ install:
 	chown -R $(PKG_USR_UID):$(PKG_USR_GID) usr
 	cp -a etc usr /
 	chown 0:0 /etc /usr{/bin,/lib,/sbin,}
+	ln -s /etc/pkgusr/bash_profile /etc/pkgusr/skel-package/.bash_profile
+	ln -s /etc/pkgusr/bashrc /etc/pkgusr/skel-package/.bashrc
