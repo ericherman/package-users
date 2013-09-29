@@ -1,0 +1,26 @@
+#!/bin/sh
+if [ "__$1__" = "____" ]
+then
+exit 2;
+fi
+
+ARGS=''
+if [ $VERBOSE ]
+then
+  ARGS='-v'
+fi
+
+if [ -e $1 ]
+then
+    if [ -d $1 ]
+    then
+        chgrp $ARGS install $1 &&
+        chmod $ARGS 1775 $1
+    else
+        echo "$1 is not a directory:"
+        ls -l $1
+        exit 1;
+    fi
+else
+    echo "$1 not found"
+fi
