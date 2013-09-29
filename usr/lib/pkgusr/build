@@ -35,7 +35,9 @@ function apply_patches()
     PATCHDIR="${HOME}/patches"
     for PATCH in ${PATCHDIR}/*
     do
-        patch -p1 < $PATCH || exit 3
+        if [ -f $PATCH ]; then
+            patch -p1 < $PATCH || exit 3
+        fi
     done
 }
 
