@@ -1,3 +1,11 @@
+# it can be nice to source the system bashrc to get handy features
+# like completions and dircolors, but do this with caution.
+# Variables introduced could have an undesired impact on the package
+# build.
+# if [ -f /etc/bashrc ]; then
+#     . /etc/bashrc
+# fi
+
 # The wrappers directory must be the first entry in the PATH.
 export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 
@@ -9,6 +17,10 @@ export PATH=${PATH}:/tools/bin:/tools/sbin
 
 # Make prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
+# Or make it stand out more with color
+# NORMAL="\[\e[0m\]"
+# GREEN="\[\e[0;32m\]"
+# export PROMPT_COMMAND='PS1="package $GREEN\u$NORMAL:"`pwd`"$GREEN>$NORMAL "'
 
 # Add optimizations by default.  Unset or override these
 # variables globally here, and on a per-package basis by
@@ -19,6 +31,14 @@ export CXXFLAGS="${CFLAGS}"
 
 # add more pkg-config dirs as they are created.
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig
+
+# XORG_PREFIX=/usr
+# XORG_CONFIG="\
+#  --prefix=$XORG_PREFIX \
+#  --sysconfdir=/etc \
+#  --mandir=$XORG_PREFIX/share/man \
+#  --localstatedir=/var"
+# export XORG_PREFIX XORG_CONFIG
 
 # default build commands -- override these in $HOME/options as
 # needed for particular packages.
