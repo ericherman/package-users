@@ -12,7 +12,7 @@ for p in $(type -ap mkdir) ; do
 done
 
 if [ ! -n "$DAISY_CHAIN" ]; then
-  echo Cannot find real ${0##*/} command 
+  echo Cannot find real ${0##*/} command
   exit 1
 fi
 
@@ -28,8 +28,8 @@ do
   a="$1"
   shift 1; i=$(($i-1))
   case "$a" in
-    $watchdir/*) dirs="$dirs ""`expr $a : "$watchdir/\(.*\)"`" 
-                 set -- "$@" "$a" 
+    $watchdir/*) dirs="$dirs ""`expr $a : "$watchdir/\(.*\)"`"
+                 set -- "$@" "$a"
                  ;;
     *) set -- "$@" "$a" ;;
   esac
@@ -45,6 +45,6 @@ for dir in $dirs ; do
     cumuldir=$cumuldir$d/
     chgrp install $watchdir/$cumuldir
     test -k $watchdir/$cumuldir || chmod g+w,o+t $watchdir/$cumuldir
-  done  
+  done
 done
 exit 0

@@ -10,7 +10,7 @@ for p in $(type -ap chgrp) ; do
 done
 
 if [ ! -n "$DAISY_CHAIN" ]; then
-  echo Cannot find real ${0##*/} command 
+  echo Cannot find real ${0##*/} command
   exit 1
 fi
 
@@ -19,7 +19,7 @@ if [ $UID == 0 ]; then
 fi
 
 if [ "$1" == "tty" ]; then
-  echo 1>&2 '***' chgrp "$@"  
+  echo 1>&2 '***' chgrp "$@"
 else
   $DAISY_CHAIN "$@" || exit $?
 fi

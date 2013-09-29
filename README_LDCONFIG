@@ -9,7 +9,7 @@ package lesstif:/usr/src/lesstif/lesstif-0.94.4> ls -l /sbin/ldconfig
 -rwsr-xr-x 1 ldconfig install 2636269 2007-02-12 00:04 /sbin/ldconfig
 
 (Actually, one should chmod o-x /sbin/ldconfig to prevent non-package
-users from calling ldconfig.) 
+users from calling ldconfig.)
 
 Of course /etc is an "install" directory:
 

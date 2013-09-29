@@ -21,7 +21,7 @@ echo '# certain that you will never re-install '"$1"', it is probably better to'
 echo '# just keep the package user '"$1"' and its home directory around.'
 echo '# Anyway, if you want to delete the account, you can use the following'
 echo '# command:'
-echo 
+echo
 echo 'userdel "'"$1"'"'
 echo
 echo '# If your /etc/login.defs has USERGROUPS_ENAB set to "yes" (the default),'

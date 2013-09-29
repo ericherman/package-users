@@ -4,13 +4,13 @@
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
 
 #The following list should contain the mount points of all filesystems
-#that are to be scanned as a space-separated list within parentheses. 
+#that are to be scanned as a space-separated list within parentheses.
 #/ will usually be in this list and if you have /usr
 #on a separate partition, it will also be in this list. Other non-special
-#filesystems where suspicious files could be located should also be put in 
+#filesystems where suspicious files could be located should also be put in
 #this list.
 #Mount points whose filesystems are special, such as procfs or sysfs should
-#not be in this list. 
+#not be in this list.
 fs_to_scan=(/)
 
 #Files with a path prefix found in the following list are ignored.
@@ -23,7 +23,7 @@ prune_prefixes=() #NO TRAILING SLASHES!!!
 
 #If the following variable is set to "yes", then files that contain
 #control characters or other non-printable characters (except for space)
-#will be reported as suspicious. 
+#will be reported as suspicious.
 #This test slows down the search considerably!
 enable_illchars=yes
 
@@ -33,9 +33,9 @@ trap ':' SIGPIPE
 
 #"-false" as 1st argument is used when called by list_suspicious_files_from
 if [ $# -ge 1 -a "$1" != "-false" ]; then
-  echo 1>&2 
+  echo 1>&2
   echo 1>&2 "USAGE: ${0##*/}"
-  echo 1>&2 
+  echo 1>&2
   echo 1>&2 '  Outputs a categorized list of files and directories with properties'
   echo 1>&2 '  that could mean trouble and should be investigated.'
   echo 1>&2
@@ -52,7 +52,7 @@ fi
 #matched as -path <prefix> -or -path <prefix>/*
 #so that the directory itself and all subdirectories are matched.
 y=(\( -false)
-for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1)) 
+for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1))
 do
   y[${#y[@]}]='-or'
   y[${#y[@]}]=-path
@@ -63,20 +63,20 @@ do
 done
 y[${#y[@]}]=')'
 
-illchars=( $'\x1'  $'\x2'  $'\x3'  $'\x4'  $'\x5'  $'\x6'  $'\x7'  $'\x8'  
-  $'\x9'  $'\xA'  $'\xB'  $'\xC'  $'\xD'  $'\xE'  $'\xF'  $'\x10'  $'\x11' 
-  $'\x12'  $'\x13'  $'\x14'  $'\x15'  $'\x16'  $'\x17'  $'\x18'  $'\x19'  
-  $'\x1A'  $'\x1B'  $'\x1C'  $'\x1D'  $'\x1E'  $'\x1F'  $'\x7f' $'\x80' 
-  $'\x81'  $'\x82'  $'\x83'  $'\x84'  $'\x85'  $'\x86'  $'\x87'  $'\x88'  
-  $'\x89'  $'\x8A'  $'\x8B'  $'\x8C'  $'\x8D'  $'\x8E'  $'\x8F'  $'\x90'  
-  $'\x91'  $'\x92'  $'\x93'  $'\x94'  $'\x95'  $'\x96'  $'\x97'  $'\x98'  
-  $'\x99'  $'\x9A'  $'\x9B'  $'\x9C'  $'\x9D'  $'\x9E'  $'\x9F' ) 
+illchars=( $'\x1'  $'\x2'  $'\x3'  $'\x4'  $'\x5'  $'\x6'  $'\x7'  $'\x8'
+  $'\x9'  $'\xA'  $'\xB'  $'\xC'  $'\xD'  $'\xE'  $'\xF'  $'\x10'  $'\x11'
+  $'\x12'  $'\x13'  $'\x14'  $'\x15'  $'\x16'  $'\x17'  $'\x18'  $'\x19'
+  $'\x1A'  $'\x1B'  $'\x1C'  $'\x1D'  $'\x1E'  $'\x1F'  $'\x7f' $'\x80'
+  $'\x81'  $'\x82'  $'\x83'  $'\x84'  $'\x85'  $'\x86'  $'\x87'  $'\x88'
+  $'\x89'  $'\x8A'  $'\x8B'  $'\x8C'  $'\x8D'  $'\x8E'  $'\x8F'  $'\x90'
+  $'\x91'  $'\x92'  $'\x93'  $'\x94'  $'\x95'  $'\x96'  $'\x97'  $'\x98'
+  $'\x99'  $'\x9A'  $'\x9B'  $'\x9C'  $'\x9D'  $'\x9E'  $'\x9F' )
 
 
 if [ "$enable_illchars" = yes ]; then
 
   illname=(\( -false)
-  for ((i=0; $i<${#illchars[@]}; i=$i+1)) 
+  for ((i=0; $i<${#illchars[@]}; i=$i+1))
   do
     #handle bash \x7f error
     if [ "*${illchars[$i]}*" = "**" ]; then
@@ -89,7 +89,7 @@ if [ "$enable_illchars" = yes ]; then
   illname[${#illname[@]}]=')'
 
   illlink=(\( -false)
-  for ((i=0; $i<${#illchars[@]}; i=$i+1)) 
+  for ((i=0; $i<${#illchars[@]}; i=$i+1))
   do
     illlink[${#illlink[@]}]='-or'
     illlink[${#illlink[@]}]=-lname
@@ -106,20 +106,20 @@ fi
 report()
 {
   echo -printf "increment_code_here"
-  echo -printf 
+  echo -printf
   echo "1 ${1}\\n" | sed 's/ /\\040/g'
   echo -printf "insert_code_here"
-  
+
   if [ -n "$2" ]; then
-    echo -printf 
+    echo -printf
     echo "2 %i 1 ${2}\\n" | sed 's/ /\\040/g'
     echo -printf "insert_code_here"
-    echo -printf 
+    echo -printf
     echo "2 %i 2 " | sed 's/ /\\040/g'
   else
-    echo -printf "2\\040" 
+    echo -printf "2\\040"
   fi
-  
+
   echo -exec ls -T 0 -ladQ {} \;
 }
 
@@ -127,15 +127,15 @@ report()
 filegoodperm=(\( -perm 644 -or -perm 755 -or -perm 555 -or -perm 444 -or -perm 600 -or -perm 700 -or -perm 640 \))
 dirgoodperm=(\( -perm 755 -or -perm 555 -or -perm 700 -or -perm 750 \))
 
-good=( \( 
+good=( \(
           -not \( -not -type d -links +1 \)
-          -not -nouser -not -nogroup 
-          -not \( "${illname[@]}" \) 
-          -not \( "${illlink[@]}" \) 
-       \) 
+          -not -nouser -not -nogroup
+          -not \( "${illname[@]}" \)
+          -not \( "${illlink[@]}" \)
+       \)
        -and
 \(
-      \( -type f -not -group install "${filegoodperm[@]}" \) 
+      \( -type f -not -group install "${filegoodperm[@]}" \)
   -or \( -type d -not -group install "${dirgoodperm[@]}" \)
   -or \( -type d -group install \( -perm 1775 \) \)
   -or \( -type d -group root -user root -path "/tmp" \( -perm 1777 \) \)
@@ -170,7 +170,7 @@ bad=(
 
 #insert unique codes for the messages
 code=100
-for ((i=0; $i<${#bad[@]}; i=$i+1)) 
+for ((i=0; $i<${#bad[@]}; i=$i+1))
 do
   if [ "${bad[$i]}" = "increment_code_here" ]; then
     code=$(($code + 1))
@@ -182,7 +182,7 @@ done
 
 allbad=()  #all bad matches are reported
 onebad=()  #only the first bad match is reported
-for ((i=0; $i<${#bad[@]}; i=$i+1)) 
+for ((i=0; $i<${#bad[@]}; i=$i+1))
 do
   if [ "${bad[$i]}" = "OP" ]; then
     allbad[$i]=","
@@ -212,7 +212,7 @@ cmd=( "${usergroupmatch[@]}" -and
 #-prune has no effect and is always false when -depth is used.
 find "${fs_to_scan[@]}" -xdev -noleaf \
      -not \( \( "${y[@]}" -prune \) -or "${y[@]}" \) \
-     -and \( "${cmd[@]}" \) | 
+     -and \( "${cmd[@]}" \) |
 sed 's/^\(...2\) \([0-9]\+ 2 \)\?\([^ ]\+\) \+[^ ]\+ \+\([^ ]\+\) \+\([^ ]\+\) \+[^"]\+\(".\+\)/\1 \2\3 \6  \4:\5/' |
-sort -u | 
+sort -u |
 sed 's/^...1 /\'$'\n''/;s/^...2 [0-9]\+ 1 /\'$'\n''  /;s/^...2 [0-9]\+ 2 /    /;s/^...2 /  /'

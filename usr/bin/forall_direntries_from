@@ -4,15 +4,15 @@
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
 
 #The following list should contain the mount points of all filesystems
-#that are to be scanned as a space-separated list within parentheses. 
+#that are to be scanned as a space-separated list within parentheses.
 #/ will usually be in this list and if you have /usr
 #on a separate partition, it will also be in this list. Other non-special
 #filesystems where package users could own files should also be put in this
 #list.
 #Mount points whose filesystems are special, such as procfs or sysfs must
-#not be in this list. While a simple find on those special filesystems should 
-#be harmless, operations such as "-exec grep something" are NOT SAFE and may 
-#have HARMFUL SIDE-EFFECTS, especially when performed as root. 
+#not be in this list. While a simple find on those special filesystems should
+#be harmless, operations such as "-exec grep something" are NOT SAFE and may
+#have HARMFUL SIDE-EFFECTS, especially when performed as root.
 fs_to_scan=(/)
 
 #Files with a path prefix found in the following list are ignored.
@@ -69,7 +69,7 @@ fi
 #matched as -path <prefix> -or -path <prefix>/*
 #so that the directory itself and all subdirectories are matched.
 y=(\( -false)
-for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1)) 
+for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1))
 do
   y[${#y[@]}]='-or'
   y[${#y[@]}]=-path

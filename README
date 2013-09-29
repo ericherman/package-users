@@ -6,7 +6,7 @@ http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.t
 
 Before installing the package users material, make sure there is
 a version of useradd and groupadd set up -- this is best done by
-installing a temporary version of the shadow package, with 
+installing a temporary version of the shadow package, with
 configure directives --sysconfdir=/etc and --prefix=/tools.
 
 You can use the Makefile here to install the initial Package

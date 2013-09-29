@@ -43,20 +43,20 @@ trap ':' SIGPIPE
 if [ $# -gt 1 ]; then
   name="${2##*/}"
   case "$1" in
-    :man) 
+    :man)
       name=${name%.gz}
       name=${name%.bz2}
       name=${name%.*}
       echo $'command\2'"$name"$'\2man\2'"$2" ;;
-    :mani) 
+    :mani)
       name=${name%.gz}
       name=${name%.bz2}
       name=${name%.*}
       echo $'command\2'"$name"$'\2mani\2'"$2" ;;
-    :lib) 
+    :lib)
       name=${name%.a}
       name=${name%%.so*}
-      echo "lib $name" 
+      echo "lib $name"
       ;;
   esac
   exit 0
@@ -74,13 +74,13 @@ expand_command()
   cmdline="$2"
   manline="$3"
   linktarget="${cmdline##*${sep}}"
-  
+
   if [ -z "$manline" ]; then
     description='No manpage'
     #the "l" at the beginning is just to make it sort after "lib"
     echo -n "lmanlessbin $cmdname" | sanitize
-    echo 
-    
+    echo
+
   else # if [ ! -z "$manline" ]; then
     manpage=${manline##*${sep}}
     wsc='[[:space:],]\+'
@@ -91,10 +91,10 @@ expand_command()
     # complete input) freaks out man and causes it to emit a totally
     # silly error message including "No such file or directory", which is
     # annoying when you do testing without suppressing man's errors.
-    # The $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' removes the backspace-based 
-    # as well as ESC-based formatting from man's output. 
-    description="$( { COLUMNS=300 man "$manpage" 2>/dev/null || 
-                                      echo " $name - Broken manpage" ; } | 
+    # The $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' removes the backspace-based
+    # as well as ESC-based formatting from man's output.
+    description="$( { COLUMNS=300 man "$manpage" 2>/dev/null ||
+                                      echo " $name - Broken manpage" ; } |
        sed $'s/.\b\\(.\\)/\\1/g;s/\x1b[^m]\\+m//g' |
        sed -n "/^NAME/,/^[A-Z]/s/^.*${wsc}${cmdname}${wsc}.*-\+${wsc}\(.*\)/\1/p;t l;d;:l;n;b l" )"
     if [ -z "$description" ]; then
@@ -107,15 +107,15 @@ expand_command()
 
   echo -n "binexe $cmdname" | sanitize
   test "$linktarget" != '(->)' && echo -n "$linktarget" | sanitize
-  echo 
+  echo
   #the "lx" in "lxdescription" is just to make sure it sorts after "lmanlessbin"
-  echo -n "lxdescription $cmdname: $description" | sanitize  
-  echo 
+  echo -n "lxdescription $cmdname: $description" | sanitize
+  echo
 }
 
 # NOTE: The -path and -lname stuff at the beginning of the following is
 # there to make sure that none of the lines output by find contains
-# a) \n or \r, because that would mess up post-processing the output 
+# a) \n or \r, because that would mess up post-processing the output
 #    line-by-line.
 # b) \x7f, because this character triggers one of the nastier bash-bugs
 #    wrt string handling
@@ -128,11 +128,11 @@ expand_command()
 # characters will not appear in output.
 # However, a) no sane package contains such files
 #          b) they will be listed in the output from list_suspicious_files
-cmd=(\( -path $'*\n*' -or -path $'*\r*' -or -path $'*\x7f*' 
+cmd=(\( -path $'*\n*' -or -path $'*\r*' -or -path $'*\x7f*'
         -or -path $'*\2*'
-        -or -lname $'*\n*' -or -lname $'*\r*' -or -lname $'*\x7f*' 
-        -or -lname $'*\2*' 
-     \) 
+        -or -lname $'*\n*' -or -lname $'*\r*' -or -lname $'*\x7f*'
+        -or -lname $'*\2*'
+     \)
      -or
      \(
        \( -printf "zall %p\n" \) ,
@@ -145,7 +145,7 @@ cmd=(\( -path $'*\n*' -or -path $'*\r*' -or -path $'*\x7f*'
        -or \( \( -name "lib*.so" -or -name "lib*.a" -or -name "lib*.so.*" \) -path "*/lib/*" -exec "$0" ":lib" {} \; \)
        -or \( -type f -perm +u+x -not \( \( -name "lib*.so" -or -name "lib*.a" -or -name "lib*.so.*" \) -path "*/lib/*" \)  -printf "nobinexe %p\n" \)
          \)
-       \)  
+       \)
      \)
     )
 
@@ -153,7 +153,7 @@ forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
 {
   sep=$'\2'
   hold=''
-  for((;;)) 
+  for((;;))
   do
     if [ -z "$hold" ]; then
       read -r line || break
@@ -161,36 +161,36 @@ forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
       line="$hold"
       hold=''
     fi
-    
+
     case "z$line" in
-      zcommand${sep}*${sep}cmd${sep}*) 
+      zcommand${sep}*${sep}cmd${sep}*)
         cmdname=${line#command${sep}}
         cmdname=${cmdname%%${sep}*}
         read -r hold
         case "z$hold" in
-          zcommand${sep}${cmdname}${sep}man${sep}*|zcommand${sep}${cmdname}${sep}mani${sep}*) 
+          zcommand${sep}${cmdname}${sep}man${sep}*|zcommand${sep}${cmdname}${sep}mani${sep}*)
             expand_command "$cmdname" "$line" "$hold"
             hold=''
           ;;
-          
-          z*) 
+
+          z*)
             expand_command "$cmdname" "$line" ""
           ;;
         esac
         ;;
 
-      zcommand${sep}*${sep}man${sep}*|command${sep}*${sep}mani${sep}*) 
-         
+      zcommand${sep}*${sep}man${sep}*|command${sep}*${sep}mani${sep}*)
+
         echo -n "manextra ${line##*${sep}}" | sanitize
         echo
         ;;
 
-      z*) 
+      z*)
         echo -n "$line" | sanitize
         echo
         ;;
     esac
-    
+
   done
 } | sort |  #no -u here, bc. the above processing may equalize different files
 {
@@ -249,31 +249,31 @@ forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
           echo 'ALL FILES'
           echo "  ${line#zall }"
           ;;
-        *) 
+        *)
           echo
           echo
           echo 'UNEXPECTED LINE'
           echo "  $line"
           ;;
-        
+
       esac
     else
       case "$curstate" in
-        binexe) echo -n ", ${line#binexe }" 
+        binexe) echo -n ", ${line#binexe }"
           ;;
-        lib) echo -n ", ${line#lib }" 
+        lib) echo -n ", ${line#lib }"
           ;;
-        lmanlessbin) echo -n ", ${line#lmanlessbin }" 
+        lmanlessbin) echo -n ", ${line#lmanlessbin }"
           ;;
-        lxdescription) echo "  ${line#lxdescription }" 
+        lxdescription) echo "  ${line#lxdescription }"
           ;;
-        manextra) echo "  ${line#manextra }" 
+        manextra) echo "  ${line#manextra }"
           ;;
-        nobinexe) echo "  ${line#nobinexe }" 
+        nobinexe) echo "  ${line#nobinexe }"
           ;;
-        zall) echo "  ${line#zall }" 
+        zall) echo "  ${line#zall }"
           ;;
-        *) 
+        *)
           echo
           echo 'UNEXPECTED LINE'
           echo "  $line"
@@ -281,6 +281,6 @@ forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
       esac
     fi
   done
-} 
+}
 
 list_suspicious_files_from "$ugname"

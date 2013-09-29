@@ -24,7 +24,7 @@
 # if any problems have occurred. If that is the case, use the corresponding
 # *.log files to see the error messages in context.
 
-if ! initial_checkup 
+if ! initial_checkup
 then
     echo "aborting!"
     exit 1
@@ -48,7 +48,7 @@ function run_stage()
     echo -n ${STAGENAME}...
     BEFORE=$(date +%s)
     { $COMMAND 3>&1 1>&2 2>&3 | tee "${LOG}.err" ;} &> "${LOG}.log"
-    for i in "${PIPESTATUS[@]}" 
+    for i in "${PIPESTATUS[@]}"
     do
         test $i != 0 && { echo FAILED! ; exit 1 ; }
     done

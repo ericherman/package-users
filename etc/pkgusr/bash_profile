@@ -56,7 +56,7 @@ else
     fi
 fi
 
-export -f initial_checkup 
+export -f initial_checkup
 export -f configure_commands make_commands test_commands install_commands
 
 # Go to the home directory whenever we su to a package user.

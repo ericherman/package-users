@@ -4,13 +4,13 @@
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
 
 #The following list should contain the mount points of all filesystems
-#that are to be scanned as a space-separated list within parentheses. 
+#that are to be scanned as a space-separated list within parentheses.
 #/ will usually be in this list and if you have /usr
-#on a separate partition, it will also be in this list. 
+#on a separate partition, it will also be in this list.
 #Mount points whose filesystems are special, such as procfs or sysfs must
-#not be in this list. While a simple find on those special filesystems should 
-#be harmless, operations such as "-exec grep something" are NOT SAFE and may 
-#have HARMFUL SIDE-EFFECTS, especially when performed as root. 
+#not be in this list. While a simple find on those special filesystems should
+#be harmless, operations such as "-exec grep something" are NOT SAFE and may
+#have HARMFUL SIDE-EFFECTS, especially when performed as root.
 fs_to_scan=(/)
 
 #Files with a path prefix found in the following list are ignored. As the
@@ -26,9 +26,9 @@ fs_to_scan=(/)
 prune_prefixes=(/home /usr/src /dev /tools) #NO TRAILING SLASHES!!!
 
 if [ $# -lt 1 -o "$1" = "--help" ]; then
-  echo 1>&2 
+  echo 1>&2
   echo 1>&2 'USAGE: '"${0##*/}"' <grep-commands>'
-  echo 1>&2 
+  echo 1>&2
   echo 1>&2 '  grep -l <grep-commands> -- <file>'
   echo 1>&2 '  will be executed for each *regular file* <file>'
   echo 1>&2 '  ATTENTION! If you override the -l switch with a switch that makes grep'
@@ -36,7 +36,7 @@ if [ $# -lt 1 -o "$1" = "--help" ]; then
   echo 1>&2 '  then DO NOT redirect output to a file that is in a directory that will be'
   echo 1>&2 '  scanned, or you risk creating an endless loop that will cause your'
   echo 1>&2 '  output file to grow till your disk is full.'
-  echo 1>&2 
+  echo 1>&2
   exit 1
 fi
 
@@ -47,7 +47,7 @@ trap ':' SIGPIPE
 #matched as -path <prefix> -or -path <prefix>/*
 #so that the directory itself and all subdirectories are matched.
 y=(\( -false)
-for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1)) 
+for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1))
 do
   y[${#y[@]}]='-or'
   y[${#y[@]}]=-path

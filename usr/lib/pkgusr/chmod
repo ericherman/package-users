@@ -10,7 +10,7 @@ for p in $(type -ap chmod) ; do
 done
 
 if [ ! -n "$DAISY_CHAIN" ]; then
-  echo Cannot find real ${0##*/} command 
+  echo Cannot find real ${0##*/} command
   exit 1
 fi
 
@@ -31,7 +31,7 @@ esac
 
 if [ "$report" = 1 ]; then echo 1>&2 "$reportmsg" ; fi
 
-if [ "$doit" = 1 ]; then  
+if [ "$doit" = 1 ]; then
   exec $DAISY_CHAIN "$@"
 fi
 
