@@ -37,6 +37,7 @@ function apply_patches()
     do
         if [ -f $PATCH ]; then
             patch -p1 < $PATCH || exit 3
+            # echo $PATCH >> ~/.project
         fi
     done
 }
@@ -76,6 +77,8 @@ then
         tar xf ${SOURCEDIR}/*.tar*
     fi
     cd ${USER}* || exit 2
+    # add package name to .project
+    # echo $(basename $(readlink -f $(pwd))) >> ~/.project
     if [ -d "${HOME}/patches" ]
     then
         apply_patches
@@ -92,3 +95,6 @@ run_stage 'configure' 00 'configure_commands'
 run_stage 'build' 01 'make_commands'
 run_stage 'test' 02 'test_commands'
 run_stage 'install' 03 'install_commands'
+
+# you may wish to automatically clean up
+# tar cvJf logs.tar.xz 0*.log 0*.err && rm -v 0*.log 0*.err && rm -rf $(readlink -f ${USER}*)/* && rmdir -v $(readlink -f ${USER}*);
