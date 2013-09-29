@@ -23,6 +23,11 @@ fs_to_scan=(/)
 #NOTE: The LFS-6.0 book uses a ramfs mounted on /dev and with that setup
 #/dev does not need to be in the prune list. But since there is no requirement
 #that /dev have its on filesystem it's better to prune it explicitly.
+#
+#NOTE: you may wish to add "/lfs" or whatever to your "prune_prefixes" if
+#both the host system and target system are using package users, especially
+#if the host and target system do not have entirely matching user ids for
+#each installed package.
 prune_prefixes=(/home /usr/src /dev /tools) #NO TRAILING SLASHES!!!!
 
 if [ $# -lt 1 -o "$1" = "--help" ]; then
