@@ -7,7 +7,9 @@ http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.t
 Before installing the package users material, make sure there is
 a version of useradd and groupadd set up -- this is best done by
 installing a temporary version of the shadow package, with
-configure directives --sysconfdir=/etc and --prefix=/tools.
+configure directives --sysconfdir=/etc and --prefix=/tools. The
+default group name max length is 16, which may be too short, thus
+you may wish to use --with-group-name-max-length=32 or similar.
 
 You can use the Makefile here to install the initial Package
 Users stuff -- have a look, it is not doing anything particularly
