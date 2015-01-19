@@ -5,19 +5,17 @@ User "ldconfig" is a member of "install"
 
 The program /sbin/ldconfig is setuid(9998) as shown:
 
-package lesstif:/usr/src/lesstif/lesstif-0.94.4> ls -l /sbin/ldconfig
--rwsr-xr-x 1 ldconfig install 2636269 2007-02-12 00:04 /sbin/ldconfig
-
-(Actually, one should chmod o-x /sbin/ldconfig to prevent non-package
-users from calling ldconfig.)
+$ ls -l /sbin/ldconfig
+-rwsr-xr-- 1 ldconfig install 2636269 2007-02-12 00:04 /sbin/ldconfig
 
 Of course /etc is an "install" directory:
 
-package lesstif:/usr/src/lesstif/lesstif-0.94.4> ls -ld /etc
+$ ls -ld /etc
 drwxrwxr-t 20 root install 1688 2007-02-20 23:33 /etc
 
 
-And obviously any member of the "install" group may run ldconfig:
+And obviously from the permissions of ldconfig, any member of the
+"install" group may run ldconfig:
 
 package lesstif:/usr/src/lesstif/lesstif-0.94.4> ldconfig
 package lesstif:/usr/src/lesstif/lesstif-0.94.4> ls -ltr /etc/ld.so.cache
@@ -27,4 +25,3 @@ package lesstif:/usr/src/lesstif/lesstif-0.94.4>
 So an odd side-effect (or bonus) is that we can see who last updated the
 cache by looking at /etc/ld.so.cache ... in this case LessTif was the
 last to run ldconfig.
-
