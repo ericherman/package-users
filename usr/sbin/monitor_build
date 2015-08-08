@@ -1,0 +1,20 @@
+#!/bin/bash
+# Copyright (c) 2015 Eric Herman <eric AT freesa DOT org>
+# Licensed under the terms of GNU General Public License version 3 or later
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# -ne 1 ]; then
+  echo 1>&2
+  echo 1>&2 'USAGE: monitor_build <package_name>'
+  echo 1>&2
+  exit 1
+fi
+
+while true; do
+  LOG=$( ls -d1 /usr/src/$1/0* | tail -n1 );
+  clear;
+  echo $LOG;
+  tail -n5 $LOG;
+  echo "";
+  sleep 2;
+done
