@@ -23,7 +23,7 @@ to 9997 so that useradd and groupadd won't allocate values in the
 package users range. (User "ldconfig" is uid 9998 gid 9998)
 
 You might want to remove the GROUP line from /etc/default/useradd
-as well.
+as well. Possibly the CREATE_MAIL_SPOOL line, too.
 
 The file etc/pkgusr/bash_profile contains the default CFLAGS and
 CHOST, which contain the default compiler optimization flags to
