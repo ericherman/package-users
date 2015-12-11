@@ -1,39 +1,32 @@
-This is Random's modified version of the original Package Users
-helper scripts from Matthias S Benkmann, described in the "more
-control and package management using package users" LFS hint.
+This reopsitory contains the "more control and package management using
+package users" document and helper scripts by Matthias S. Benkmann,
+originally found as a hint for Linux From Scratch. The helper scripts
+have been modified and adjusted so they work well for systems built
+using the Cross-Built Linux (CBL) process.
+
+The original version of the document is available on the Linux From
+Scratch site:
 
 http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt
 
-Before installing the package users material, make sure there is
-a version of useradd and groupadd set up -- this is best done by
-installing a temporary version of the shadow package, with
-configure directives --sysconfdir=/etc and --prefix=/tools. The
-default group name max length is 16, which may be too short, thus
-you may wish to use --with-group-name-max-length=32 or similar.
+The package users material should be the first thing installed into the
+final CBL system -- before installing any other packages. Since the
+package users scripts aren't available at the time that they're being
+installed, CBL provides a blueprint that installs everything _as though_
+it were already available.
 
-You can use the Makefile here to install the initial Package
-Users stuff -- have a look, it is not doing anything particularly
-odd.  If you want to use the Makefile approach, you might have to
-modify it first -- it assumes that the install group will be GID
-9999, and the package users helpers will be installed as
-"package-users" with UID and GID 10000.
+The conventions used in CBL are: the install group is GID 9999, and
+package users are set up to use UIDs and GIDs starting with 10000. (The
+first package user is `package-users`, of course.)  For CBL we also
+create an `ldconfig` user with UID and GID 9998 -- that isn't a package
+user, but it exists so that package users can run `ldconfig` without
+being privileged.
 
-You might want to modify UID_MAX and GID_MAX in /etc/login.defs
-to 9997 so that useradd and groupadd won't allocate values in the
-package users range. (User "ldconfig" is uid 9998 gid 9998)
+CBL also sets UID_MAX and GID_MAX in /etc/login.defs to 9997 so that
+useradd and groupadd won't allocate values that are reserved for package
+users, and removes the GROUP and CREATE_MAIL_SPOOL settings from the
+useradd defaults.
 
-You might want to remove the GROUP line from /etc/default/useradd
-as well. Possibly the CREATE_MAIL_SPOOL line, too.
-
-The file etc/pkgusr/bash_profile contains the default CFLAGS and
-CHOST, which contain the default compiler optimization flags to
-use when building packages.  Adjust those to taste.
-
-After installing the package users scripts, run
-/usr/sbin/create_lfs_users and /usr/sbin/chown_lfs_symlinks.
-That will set things up so that the standard LFS packages already
-have users set up, and the symlinks that point into /tools will
-be correctly owned so they can be clobbered by the real files as
-they are built.  Also run set_install_dirs -- and re-run it after
-every package installation, in case the package created any new
-install directories.
+The file etc/pkgusr/bash_profile contains the default CFLAGS, LDFLAGS,
+and MAKEOPTS, which contain the default flags to use when building
+packages.  Adjust those to taste.
