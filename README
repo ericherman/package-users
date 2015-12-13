@@ -26,7 +26,3 @@ CBL also sets UID_MAX and GID_MAX in /etc/login.defs to 9997 so that
 useradd and groupadd won't allocate values that are reserved for package
 users, and removes the GROUP and CREATE_MAIL_SPOOL settings from the
 useradd defaults.
-
-The file etc/pkgusr/bash_profile contains the default CFLAGS, LDFLAGS,
-and MAKEOPTS, which contain the default flags to use when building
-packages.  Adjust those to taste.

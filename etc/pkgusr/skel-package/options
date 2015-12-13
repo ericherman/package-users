@@ -3,26 +3,26 @@
 #
 # If the package needs to be built from a directory other than
 # the source directory, set BUILD_DIR appropriately (for example:
-# 'export BUILD_DIR=../build-binutils')
+# `export BUILD_DIR=../build-binutils`)
 #
-# You may copy a source tarball into a "src" subdirectory, and
-# put patches into a "patches" subdirectory, in which case the
-# build script will unpack and patch the source for you.
-# Alternatively, you can prepare the source yourself (and cd into
-# the source directory) before running build.
+# You may copy a source tarball into a `src` subdirectory, and put
+# patches into a `patches` subdirectory, in which case the build script
+# will unpack and patch the source for you.  Alternatively, you can
+# prepare the source yourself (and cd into the source directory) before
+# running build.
 #
-# If necessary, redefine the build functions:
-#   configure_commands, make_commands, test_commands, install_commands
+# If necessary, redefine the build functions: configure_commands,
+# make_commands, test_commands, install_commands
 #
-# If this package has external dependencies, such as requiring
-# special users or groups to exist, verify that the dependencies
-# are met in initial_checkup (echo problem notifications and exit
-# if they are not).
+# If this package has external dependencies, such as requiring special
+# users or groups to exist, verify that the dependencies are met in
+# initial_checkup (this function should echo problem notifications and
+# exit the build if they are not).
 #
-# Look at ~/.bash_profile for syntax help.  Re-source the options
-# file afterward!
+# Look at ~/.bash_profile for syntax help.  Re-source the options file
+# after making any changes to it!
 #
 # Run "declare -f" to find out the current function definitions.
 #
-# If you don't need to set anything in the options file, just
+# If you don't need to set anything in the options file, you can just
 # delete it entirely!

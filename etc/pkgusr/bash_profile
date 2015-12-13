@@ -1,7 +1,14 @@
-# it can be nice to source the system bashrc to get handy features
-# like completions and dircolors, but do this with caution.
-# Variables introduced could have an undesired impact on the package
-# build.
+# This is the standard .bash_profile for all package users. You can
+# change it however you like based on your own preferences.  There are a
+# few suggested customizations embedded below; uncomment lines as
+# appropriate. Don't feel like you have to keep these comments after
+# you're happy with the result -- I always delete them to reduce
+# clutter!
+
+# it can be nice to source the system bashrc to get features like
+# completions and dircolors, but do this with caution.  Variables
+# introduced by doing this could have an undesired impact on package
+# builds.
 # if [ -f /etc/bashrc ]; then
 #     . /etc/bashrc
 # fi
@@ -9,36 +16,21 @@
 # The wrappers directory must be the first entry in the PATH.
 export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 
-# The /tools binary directories must be the last part of the
-# PATH, and should be removed entirely after the LFS build is
-# complete (at which point /tools is no longer needed and should
-# be deleted).
-export PATH=${PATH}:/tools/bin:/tools/sbin
+# The /bootstrap binary directories must be the last part of the PATH
+# (so that the final system components are used as they are built), and
+# should be removed entirely after the CBL build is complete (at which
+# point /bootstrap is no longer needed and should be deleted).
+export PATH=${PATH}:/bootstrap/bin:/bootstrap/sbin
 
-# Make prompt reflect that we are a package user.
+# Make the shell prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
-# Or make it stand out more with color
+# Alternatively, make it stand out more with color
 # NORMAL="\[\e[0m\]"
 # GREEN="\[\e[0;32m\]"
 # export PROMPT_COMMAND='PS1="package $GREEN\u$NORMAL:"`pwd`"$GREEN>$NORMAL "'
 
-# Add optimizations by default.  Unset or override these
-# variables globally here, and on a per-package basis by
-# modifying ~/options.
-export CHOST="i686-pc-linux-gnu"
-export CFLAGS="-march=native -O3 -pipe -fomit-frame-pointer"
-export CXXFLAGS="${CFLAGS}"
-
 # add more pkg-config dirs as they are created.
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig
-
-# XORG_PREFIX=/usr
-# XORG_CONFIG="\
-#  --prefix=$XORG_PREFIX \
-#  --sysconfdir=/etc \
-#  --mandir=$XORG_PREFIX/share/man \
-#  --localstatedir=/var"
-# export XORG_PREFIX XORG_CONFIG
 
 # default build commands -- override these in $HOME/options as
 # needed for particular packages.
@@ -68,11 +60,12 @@ function install_commands()
 
 if [ -x "$HOME/options" ]
 then
-    . $HOME/options
+    source $HOME/options
 else
     if [ -f "$HOME/options" ]
     then
-        echo "options file exists but is not executable!  Please fix that."
+        echo '`options` file exists but is not executable!'
+        echo 'It will be ignored. `chmod +x` it if you want it to be used.'
     fi
 fi
 
@@ -81,3 +74,6 @@ export -f configure_commands make_commands test_commands install_commands
 
 # Go to the home directory whenever we su to a package user.
 cd
+
+# Add optimizations by default.  Unset or override these variables
+# globally here, and on a per-package basis by modifying ~/options.

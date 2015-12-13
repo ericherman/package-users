@@ -1,10 +1,15 @@
 Package Users (user and group based package management)
 
-Many scripts orignially:
+Many files here (noted within the file text) are:
+
 Copyright 2000,2004 Matthias S. Benkmann <article at winterdrache dot de>
 
-Additions and modifications:
-Copyright (C) 2008, 2013 Brett Neumeier <brett@freesa.org>
+These are licensed in accordance with file text.
+
+
+The remaining files in this distribution are:
+
+Copyright (C) 2008, 2013, 2015 Brett Neumeier <brett@freesa.org>
 Copyright (C) 2008, 2013 Eric Herman <eric@freesa.org>
 
     These programs are free software: you can redistribute them and/or modify

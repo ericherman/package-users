@@ -1,4 +1,3 @@
-
 AUTHOR: Matthias S. Benkmann <article at winterdrache dot de>
 
 DATE: 2007-10-20
