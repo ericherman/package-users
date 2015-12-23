@@ -1,7 +1,8 @@
 #!/bin/bash
 # Copyright (c) 2015 Eric Herman <eric AT freesa DOT org>
+# and Brett Neumeier <random AT freesa DOT org>
 # Licensed under the terms of GNU General Public License version 3 or later
-# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+# Provided `as is' with absolutely no warranty of any kind.
 
 if [ $# -ne 1 ]; then
   echo 1>&2
@@ -10,11 +11,21 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-while true; do
-  LOG=$( ls -d1 /usr/src/$1/0* | tail -n1 );
-  clear;
-  echo $LOG;
-  tail -n5 $LOG;
-  echo "";
+PACKAGE=$1
+
+if [ ! -d /usr/src/$PACKAGE ]
+then
+    exit 1
+fi
+
+cd /usr/src/$PACKAGE
+
+while $(pgrep -u $PACKAGE -f build)
+do
+  LOG=$(ls -d1 /usr/src/$PACKAGE/0* | tail -n 1)
+  export L=$(($(tput lines) - 1))
+  clear
+  ls -l $LOG
+  tail -n $L $LOG | elide_middle
   sleep 2;
 done

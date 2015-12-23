@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+#
+# Copyright (c) 2015 Brett Neumeier <random AT freesa DOT org>
+# Licensed under the terms of GNU General Public License version 3 or later
+# Provided `as is' with absolutely no warranty of any kind.
+#
+# Simple program that replaces the middle of long lines with "...",
+# which can be helpful when tailing compile log files.
+
+max_cols = %x(tput cols).to_i
+span_size = (max_cols / 2) - 2
+while line = STDIN.gets
+  if line.size <= max_cols
+    STDOUT.puts line
+  else
+    STDOUT.puts "#{line[0..span_size]}...#{line[-span_size..-1]}"
+  end
+end
