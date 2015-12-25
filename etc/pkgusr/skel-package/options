@@ -1,28 +1,49 @@
-# override CFLAGS, CXXFLAGS, or other environment variables here
+# This is the default `options` file. Generally it will be overwritten
+# by litbuild with the correct contents based on a blueprint.
+#
+# If you are not using litbuild:
+#
+# Override CFLAGS, CXXFLAGS, or other environment variables here
 # as needed.
 #
 # If the package needs to be built from a directory other than
 # the source directory, set BUILD_DIR appropriately (for example:
 # `export BUILD_DIR=../build-binutils`)
 #
-# You may copy a source tarball into a `src` subdirectory, and put
+# You should copy a source tarball into a `src` subdirectory, and put
 # patches into a `patches` subdirectory, in which case the build script
-# will unpack and patch the source for you.  Alternatively, you can
-# prepare the source yourself (and cd into the source directory) before
-# running build.
+# will unpack and patch the source for you.
 #
-# If necessary, redefine the build functions: configure_commands,
-# make_commands, test_commands, install_commands
-#
-# If this package has external dependencies, such as requiring special
-# users or groups to exist, verify that the dependencies are met in
-# initial_checkup (this function should echo problem notifications and
-# exit the build if they are not).
-#
-# Look at ~/.bash_profile for syntax help.  Re-source the options file
-# after making any changes to it!
-#
-# Run "declare -f" to find out the current function definitions.
-#
-# If you don't need to set anything in the options file, you can just
-# delete it entirely!
+# These are default versions of the build functions (configure_commands,
+# make_commands, test_commands, install_commands). Change them as
+# needed.
+function configure_commands()
+{
+  ./configure --prefix=/usr
+}
+
+function make_commands()
+{
+  make
+}
+
+function test_commands()
+{
+  make check
+}
+
+function install_commands()
+{
+  make install
+}
+
+# If this package has additional requirements, such as needing special
+# users or groups to exist, verify that the requirements are met in
+# initial_checkup (which should echo problem notifications and exit the
+# build if they are not).
+function initial_checkup()
+{
+  :
+}
+
+# Re-source the options file after making any changes to it!

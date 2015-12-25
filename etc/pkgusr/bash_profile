@@ -32,32 +32,6 @@ export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
 # add more pkg-config dirs as they are created.
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig
 
-# default build commands -- override these in $HOME/options as
-# needed for particular packages.
-function initial_checkup()
-{ :
-}
-
-function configure_commands()
-{
-  ./configure --prefix=/usr
-}
-
-function make_commands()
-{
-  make
-}
-
-function test_commands()
-{
-  make check
-}
-
-function install_commands()
-{
-  make install
-}
-
 if [ -x "$HOME/options" ]
 then
     source $HOME/options

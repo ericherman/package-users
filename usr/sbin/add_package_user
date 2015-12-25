@@ -2,222 +2,111 @@
 # Copyright (c) 2004 Matthias S. Benkmann <article AT winterdrache DOT de>
 # You may do everything with this code except misrepresent its origin.
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+#
+# Adjusted for CBL and stylistic preferences by Brett Neumeier
 
-# Package user home directories will be located under this directory
-homebase=/usr/src
-
-# Contents of following directory are copied into home directory when creating
-# a new package user (existing files will not be overwritten)
-skel=/etc/pkgusr/skel-package
+source /etc/pkgusr/config.sh
 
 if [ $# -ne 2 ]; then
-  echo 1>&2 'USAGE: '
-  echo 1>&2 'add_package_user <description> <name>'
-  echo 1>&2
-  echo 1>&2 'If a user account called <name> exists, a message will be printed and'
-  echo 1>&2 'everything will be left as-is. If a user account called <name> does not'
-  echo 1>&2 'exist, one will be created.'
-  echo 1>&2 'The account'"'"'s primary group will be <name> and the /etc/passwd'
-  echo 1>&2 'description field will be set to <description>.'
-  echo 1>&2 'The new account will get the "install" group as a supplementary group. If'
-  echo 1>&2 'a group named "install" does not exist, one will be created.'
-  echo 1>&2
-  echo 1>&2 '<description> needs to be a valid string for the /etc/passwd description'
-  echo 1>&2 '  field. This means, among other things, that it must not contain ":".'
-  echo 1>&2 '  Don'"'"'t forget to properly quote <description> if it contains spaces or'
-  echo 1>&2 '  other characters interpreted by the shell!'
-  echo 1>&2
+  echo 1>&2 <<EOF
+USAGE:
+add_package_user <description> <name>
+
+If a user account called <name> exists, a message will be printed and
+everything will be left as-is. If a user account called <name> does not
+exist, one will be created.
+
+The account's primary group will be <name> and the /etc/passwd
+description field will be set to <description>.  The new account will
+get the "install" group as a supplementary group.
+
+<name> must be a legal user name: it must start with a lowercase letter
+or underscore, and consist of up to 32 lowercase letters, digits,
+underscores, and dashes.
+
+<description> needs to be a valid string for the /etc/passwd description
+field. This means, among other things, that it must not contain ":".
+Don't forget to properly quote <description> if it contains spaces or
+other characters interpreted by the shell!
+EOF
   exit 1
 fi
 
-grpfile=/etc/group
-passwd=/etc/passwd
-
-
-# we hardcode the UID and GID ranges to be used by package users.
-# it requires some effort to ensure that these UID and GID ranges
-# are ONLY used by package users!  When adding new users and
-# groups, remember to specify the UID and GIDs.
+# MINUID (incl.) and MAXUID (excl.) determine the numeric range from
+# which the new account's UID will be picked, using these rules:
 #
-# <minuid>(incl.) and <maxuid>(excl.) determine the numeric range
-# from which the new account's UID will be picked in the following way:
-#
-#  1. If the range contains no unused UID => Exit with error.
-#  2. If <maxuid>-1 is still unused, find the greatest UID from the range
+#  1. If the range contains no unused UID, Exit with error.
+#  2. If MAXUID-1 is still unused, find the greatest UID from the range
 #     that is used and pick the number after that.
-#  3. If <maxuid>-1 is in use, pick the first unused number from the range.
+#  3. If MAXUID-1 is in use, pick the first unused number from the range.
 #
-# <mingid>(incl.) and <maxgid>(excl.) determine the numeric range
-# from which to pick the GID for group <group> and/or group
-# "install", if it needs to be created. The process for picking
-# the GID is the same as that for the UID.
+# The GID for the new user will be the same as the UID.
 
-minuid=10000
-maxuid=20000
-mingid=10000
-maxgid=20000
-
-description=$1
-name=$2
-gname=$2
-home=$homebase/$name
+DESCRIPTION=$1
+NAME=$2
+GNAME=$2
+HOME=$PKGUSR_HOME/$NAME
 
 if [ $UID -ne 0 ]; then echo Please run this script as root. ; exit 1; fi
 
-#test if user already exists
-grep "^$name:.*" $passwd
+# test if user already exists
+grep "^$NAME:.*" /etc/passwd
 if [ $? -eq 0 ]; then
   echo 'Package user already exists! Do su '$name' to do maintenance work.'
   exit 1
 fi
 
-# validate minuid, maxuid, etc
-error=0
+UIDLIST=$(cut -d : -f 3 /etc/passwd | sort -n)
 
-if [ $minuid -ge $maxuid ]; then
-  echo 'Error: minuid must be less than maxuid !'
-  exit 1
-fi
-
-if [ $mingid -ge $maxgid ]; then
-  echo 'Error: mingid must be less than maxgid !'
-  exit 1
-fi
-
-uidlist=`cut -d : -f 3 $passwd | sort -n`
-
-#find last used UID within range
-u=0
-for i in $uidlist
+# find last used UID within range
+U=0
+for i in $UIDLIST
 do
   if [ $i -ge $maxuid ]; then break; fi
-  if [ $i -ge $minuid ]; then u=$i; fi
+  if [ $i -ge $minuid ]; then U=$i; fi
 done
 
-#if no UID from the range is used, pick the first, otherwise pick the one
-#immediately following the last UID in use.
-if [ $u -eq 0 ]; then u=$minuid; else u=`expr $u + 1`; fi
+# if no UID from the range is used, pick the first, otherwise pick the one
+# immediately following the last UID in use.
+if [ $U -eq 0 ]; then U=$MINUID; else U=$(expr $U + 1); fi
 
-#if the UID determined above is >= maxuid (i.e. illegal)
-#then we look for the first unused uid in the range.
-if [ $u -ge $maxuid ]; then
-  u=$minuid
-  for i in $uidlist
+# if the UID determined above is >= MAXUID (i.e. illegal)
+# then we look for the first unused UID in the range.
+if [ $U -ge $MAXUID ]; then
+  U=$MINUID
+  for i in $UIDLIST
   do
-    if [ $u -eq $i ]; then u=`expr $u + 1` ; fi
-    if [ $i -ge $maxuid ]; then break; fi
+    if [ $U -eq $i ]; then U=$(expr $u + 1); fi
+    if [ $i -ge $MAXUID ]; then break; fi
   done
 
-  if [ $u -ge $maxuid ]; then
-    echo Error: UID range is full!
+  if [ $U -ge $MAXUID ]; then
+    echo 'Error: No UIDs are available!'
     exit 1
   fi
 fi
 
-echo Will create user $name with uid: $u
+echo "Will create user and group $NAME with uid and gid: $U"
 
-unset uidlist
+unset UIDLIST
 
-#############################################################################
-#                                 group
-#############################################################################
+echo "Creating group $NAME with gid $U"
+groupadd -g $U $NAME || exit 1
 
-#execute the following for gname and "install" to get gids for those 2 groups
+echo "Creating user $NAME with uid $U"
+useradd -c "$DESCRIPTION" -d $HOME -g $NAME -G install \
+        -s /bin/bash -m -k $PKGUSR_SKEL -u $U $NAME || exit 2
 
-g=0
-creategroup=0
-for group in install $gname
-do
-  oldg=$g #save gid from previous run
-  createinstall=$creategroup
-  creategroup=0
-
-  #test if group already exists and extract gid if so
-  g=`grep ^${group}:.\* $grpfile | cut -d : -f 3 -`
-
-  #if group does not exist, then check range for a free gid
-  if [ z$g = z ]; then
-    creategroup=1
-
-    gidlist=`cut -d : -f 3 $grpfile | sort -n`
-
-    #find last used GID within range
-    g=0
-    for i in $gidlist
-    do
-      if [ $i -ge $maxgid ]; then break; fi
-      if [ $i -ge $mingid ]; then g=$i; fi
-    done
-
-    #if no GID from the range is used, pick the first, otherwise pick the one
-    #immediately following the last GID in use.
-    if [ $g -eq 0 ]; then g=$mingid; else g=`expr $g + 1`; fi
-
-    #don't reuse gid from previous run
-    if [ $g -eq $oldg ]; then g=`expr $g + 1`; fi
-
-    #if the GID determined above is >= maxgid (i.e. illegal)
-    #then we look for the first unused gid in the range.
-    if [ $g -ge $maxgid ]; then
-      g=$mingid
-      for i in $gidlist
-      do
-        if [ $g -eq $i ]; then g=`expr $g + 1` ; fi
-        if [ $g -eq $oldg ]; then g=`expr $g + 1` ; fi
-        if [ $i -ge $maxgid ]; then break; fi
-      done
-
-      if [ $g -ge $maxgid ]; then
-        echo Error: GID range is full!
-        exit 1
-      fi
-    fi
-  fi
-done
-
-unset gidlist
-
-if [ $createinstall -eq 1 ]; then
-  echo Creating group install with gid $oldg
-  groupadd -g $oldg install || exit 1
-else
-  echo Group install has gid $oldg
-fi
-if [ $creategroup -eq 1 ]; then
-  if [ $u -ne $g ]; then
-      echo "Hmm, group id found was $g and user id found was $u.  Bail out."
-      exit 1
-  fi
-  echo Creating group $gname with gid $g
-  groupadd -g $g $gname || exit 1
-else
-  echo Group $gname has gid $g
-fi
-
-
-
-if [ $u -ne $g ]; then
-  echo "Hmm, group $gname exists with id $g but user id found was $u."
-  echo "Bail out."
-  exit 2
-fi
-
-useradd -c "${description}" -d ${home} -g ${gname} -G install \
-        -s /bin/bash -u ${u} ${name}  || exit 1
-
+# TODO: decide if I want to worry about mail spools for package users
 # We don't need mail spools for package users, but useradd insists on
 # creating them.
-if [ -f /var/mail/${name} ]
-then
-  rm -f /var/mail/${name}
-fi
+# if [ -f /var/mail/${name} ]
+# then
+#   rm -f /var/mail/${name}
+# fi
 
-mkdir -p $home || exit 1
-
-yes n|cp -ai -R ${skel}/{[^.],.[^.],..?}* ${home} 2>/dev/null >/dev/null
-
-cd ${home}
-chown --recursive ${u}:${g} .
+cd $HOME
+chown --recursive $U:$G .
 chmod 755 .
 chmod 755 options
 

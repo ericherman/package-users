@@ -1,26 +1,27 @@
 This reopsitory contains the "more control and package management using
 package users" document and helper scripts by Matthias S. Benkmann,
-originally found as a hint for Linux From Scratch. The helper scripts
-have been modified and adjusted so they work well for systems built
-using the Cross-Built Linux (CBL) process.
+originally found as a hint for Linux From Scratch and now modified and
+adjusted so they work well as part of the Cross-Built Linux process and
+system.
 
 The original version of the document is available on the Linux From
 Scratch site:
 
 http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt
 
-The package users material should be the first thing installed into the
-final CBL system -- before installing any other packages. Since the
-package users scripts aren't available at the time that they're being
-installed, CBL provides a blueprint that installs everything _as though_
-it were already available.
+The package users material should be the first thing installed as a part
+of the final CBL system -- before installing any other packages. Since
+the package users scripts aren't available at the time that they're
+being installed, CBL provides a blueprint that sets up the package users
+files just as though they had been installed using the package users
+framework.
 
 The conventions used in CBL are: the install group is GID 9999, and
 package users are set up to use UIDs and GIDs starting with 10000. (The
 first package user is `package-users`, of course.)  For CBL we also
-create an `ldconfig` user with UID and GID 9998 -- that isn't a package
-user, but it exists so that package users can run `ldconfig` without
-being privileged.
+create an `ldconfig` user with UID and GID 9998; ldconfig isn't a
+package user, it only exists so that any user in the "install" group can
+run `ldconfig` without using sudo.
 
 CBL also sets UID_MAX and GID_MAX in /etc/login.defs to 9997 so that
 useradd and groupadd won't allocate values that are reserved for package
