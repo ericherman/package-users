@@ -16,11 +16,11 @@
 # The wrappers directory must be the first entry in the PATH.
 export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 
-# The /bootstrap binary directories must be the last part of the PATH
+# The /scaffolding binary directories must be the last part of the PATH
 # (so that the final system components are used as they are built), and
 # should be removed entirely after the CBL build is complete (at which
-# point /bootstrap is no longer needed and should be deleted).
-export PATH=${PATH}:/bootstrap/bin:/bootstrap/sbin
+# point /scaffolding is no longer needed and should be deleted).
+export PATH=${PATH}:/scaffolding/bin:/scaffolding/sbin
 
 # Make the shell prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
