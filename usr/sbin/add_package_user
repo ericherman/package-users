@@ -62,8 +62,8 @@ UIDLIST=$(cut -d : -f 3 /etc/passwd | sort -n)
 U=0
 for i in $UIDLIST
 do
-  if [ $i -ge $maxuid ]; then break; fi
-  if [ $i -ge $minuid ]; then U=$i; fi
+  if [ $i -ge $MAXUID ]; then break; fi
+  if [ $i -ge $MINUID ]; then U=$i; fi
 done
 
 # if no UID from the range is used, pick the first, otherwise pick the one
