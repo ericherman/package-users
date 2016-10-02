@@ -35,7 +35,7 @@ fi
 # MINUID (incl.) and MAXUID (excl.) determine the numeric range from
 # which the new account's UID will be picked, using these rules:
 #
-#  1. If the range contains no unused UID, Exit with error.
+#  1. If the range contains no unused UID, exit with error.
 #  2. If MAXUID-1 is still unused, find the greatest UID from the range
 #     that is used and pick the number after that.
 #  3. If MAXUID-1 is in use, pick the first unused number from the range.
@@ -45,7 +45,7 @@ fi
 DESCRIPTION=$1
 NAME=$2
 GNAME=$2
-HOME=$PKGUSR_HOME/$NAME
+HOMEDIR=$PKGUSR_HOME/$NAME
 
 if [ $UID -ne 0 ]; then echo Please run this script as root. ; exit 1; fi
 
@@ -62,8 +62,14 @@ UIDLIST=$(cut -d : -f 3 /etc/passwd | sort -n)
 U=0
 for i in $UIDLIST
 do
-  if [ $i -ge $MAXUID ]; then break; fi
-  if [ $i -ge $MINUID ]; then U=$i; fi
+  if [ $i -ge $MAXUID ]
+  then
+      break
+  fi
+  if [ $i -ge $MINUID ]
+  then
+      U=$i
+  fi
 done
 
 # if no UID from the range is used, pick the first, otherwise pick the one
@@ -94,19 +100,19 @@ echo "Creating group $NAME with gid $U"
 groupadd -g $U $NAME || exit 1
 
 echo "Creating user $NAME with uid $U"
-useradd -c "$DESCRIPTION" -d $HOME -g $NAME -G install \
+useradd -c "$DESCRIPTION" -d $HOMEDIR -g $NAME -G install \
         -s /bin/bash -m -k $PKGUSR_SKEL -u $U $NAME || exit 2
 
 # TODO: decide if I want to worry about mail spools for package users
 # We don't need mail spools for package users, but useradd insists on
 # creating them.
-# if [ -f /var/mail/${name} ]
+# if [ -f /var/spool/mail/${NAME} ]
 # then
-#   rm -f /var/mail/${name}
+#   rm -f /var/spool/mail/${NAME}
 # fi
 
-cd $HOME
-chown --recursive $U:$G .
+cd $HOMEDIR
+chown --recursive $U:$U .
 chmod 755 .
 chmod 755 options
 

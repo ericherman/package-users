@@ -6,11 +6,11 @@
 #
 # If run from the home directory, there should be a source tarball in
 # $HOME/src; it will be unpacked.  The top-level directory created by
-# unpacking the tarball should start with the package user name.  Then,
-# if there are patches in a directory $HOME/patches, they will be
-# applied (with `-p1`).
+# unpacking the tarball should be the same as the first part of the
+# tarball. Then, if there are patches in a directory $HOME/patches, they
+# will be applied (with `-p1`).
 #
-# It will create 8 log files in the $HOME directory:
+# It will create 8 log files in the $HOME/logs directory:
 #   00-configure.log: All messages output during configure
 #   00-configure.err: Just the errors output during configure
 #   01-make.log: All messages output during make
@@ -47,7 +47,7 @@ function run_stage()
     STAGENAME=$1
     STAGENUMBER=$2
     COMMAND=$3
-    LOG=${HOME}/${STAGENUMBER}-${STAGENAME}
+    LOG=${HOME}/logs/${STAGENUMBER}-${STAGENAME}
     echo -n ${STAGENAME}...
     BEFORE=$(date +%s)
     { $COMMAND 3>&1 1>&2 2>&3 | tee "${LOG}.err" ;} &> "${LOG}.log"
@@ -66,7 +66,7 @@ if [ ${PWD} = ${HOME} ]
 then
     if [ ! -d "${HOME}/src" ]
     then
-        echo "There is no source directory! Prepare the source manually."
+        echo "There is no src directory! Prepare the source manually."
         exit 1
     fi
     SOURCEDIR="${HOME}/src"
@@ -76,7 +76,8 @@ then
     else
         tar xf ${SOURCEDIR}/*.tar*
     fi
-    cd ${USER}* || exit 2
+    SRCDIR=$(ls -1 src | sed 's@\.tar.*@@')
+    cd $SRCDIR || exit 2
     # add package name to .project
     # echo $(basename $(readlink -f $(pwd))) >> ~/.project
     if [ -d "${HOME}/patches" ]
@@ -95,7 +96,3 @@ run_stage 'configure' 00 'configure_commands'
 run_stage 'build' 01 'make_commands'
 run_stage 'test' 02 'test_commands'
 run_stage 'install' 03 'install_commands'
-
-# you may wish to automatically clean up
-# cd ~
-# tar cvJf logs.tar.xz 0*.log 0*.err && rm -v 0*.log 0*.err && rm -rf $(readlink -f ${USER}*)/* && rmdir -v $(readlink -f ${USER}*);
