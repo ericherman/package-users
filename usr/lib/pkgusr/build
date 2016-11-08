@@ -69,20 +69,20 @@ then
         echo "There is no src directory! Prepare the source manually."
         exit 1
     fi
-    SOURCEDIR="${HOME}/src"
-    if [ -f ${SOURCEDIR}/*.lzma ]
+    SOURCE_TAR_DIR="${HOME}/src"
+    if [ -f ${SOURCE_TAR_DIR}/*.lzma ]
     then
-        lzma -d < ${SOURCEDIR}/*.lzma | tar xf -
+        lzma -d < ${SOURCE_TAR_DIR}/*.lzma | tar xf -
     else
-        tar xf ${SOURCEDIR}/*.tar*
+        tar xf ${SOURCE_TAR_DIR}/*.tar*
     fi
 
     if [ "_${SOURCE_DIR_PREFIX}_" != "__" ]
     then
         cd ${SOURCE_DIR_PREFIX}*
     else
-        SRCDIR=$(ls -1 src | sed 's@\.tar.*@@')
-        cd ${SRCDIR} || exit 2
+        SOURCE_DIR=$(ls -1 src | sed 's@\.tar.*@@')
+        cd ${SOURCE_DIR} || exit 2
     fi
 
     # add package name to .project
