@@ -76,8 +76,15 @@ then
     else
         tar xf ${SOURCEDIR}/*.tar*
     fi
-    SRCDIR=$(ls -1 src | sed 's@\.tar.*@@')
-    cd $SRCDIR || exit 2
+
+    if [ "_${SOURCE_DIR_PREFIX}_" != "__" ]
+    then
+        cd ${SOURCE_DIR_PREFIX}*
+    else
+        SRCDIR=$(ls -1 src | sed 's@\.tar.*@@')
+        cd ${SRCDIR} || exit 2
+    fi
+
     # add package name to .project
     # echo $(basename $(readlink -f $(pwd))) >> ~/.project
     if [ -d "${HOME}/patches" ]
