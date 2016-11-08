@@ -47,7 +47,11 @@ function run_stage()
     STAGENAME=$1
     STAGENUMBER=$2
     COMMAND=$3
-    LOG=${HOME}/logs/${STAGENUMBER}-${STAGENAME}
+
+    LOGDIR=${HOME}/logs
+    [[ -d $LOGDIR ]] || mkdir $LOGDIR
+
+    LOG=$LOGDIR/${STAGENUMBER}-${STAGENAME}
     echo -n ${STAGENAME}...
     BEFORE=$(date +%s)
     { $COMMAND 3>&1 1>&2 2>&3 | tee "${LOG}.err" ;} &> "${LOG}.log"
