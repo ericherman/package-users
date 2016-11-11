@@ -19,20 +19,20 @@ fi
 ugname="$1"
 
 ugmatcher=(-false)
-#test if find accepts ugname as a user, and append to ugmatcher if it does
+# test if find accepts ugname as a user, and append to ugmatcher if it does
 if find / -maxdepth 0 -user "$ugname" >/dev/null 2>&1 ; then
   ugmatcher[${#ugmatcher[@]}]="-or"
   ugmatcher[${#ugmatcher[@]}]="-user"
   ugmatcher[${#ugmatcher[@]}]="$ugname"
 fi
-#test if find accepts ugname as a group, and append to ugmatcher if it does
+# test if find accepts ugname as a group, and append to ugmatcher if it does
 if find / -maxdepth 0 -group "$ugname" >/dev/null 2>&1 ; then
   ugmatcher[${#ugmatcher[@]}]="-or"
   ugmatcher[${#ugmatcher[@]}]="-group"
   ugmatcher[${#ugmatcher[@]}]="$ugname"
 fi
 
-#if find accepted ugname as neither user nor group, then exit
+# if find accepted ugname as neither user nor group, then exit
 if [ "${#ugmatcher[@]}" = 1 ]; then
   echo 1>&2 'find does not accept `'"$ugname'"' as group or user name'
   exit 1

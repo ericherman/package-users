@@ -3,32 +3,28 @@
 # You may do everything with this code except misrepresent its origin.
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
 
-#The following list should contain the mount points of all filesystems
-#that are to be scanned as a space-separated list within parentheses.
-#/ will usually be in this list and if you have /usr
-#on a separate partition, it will also be in this list. Other non-special
-#filesystems where package users could own files should also be put in this
-#list.
-#Mount points whose filesystems are special, such as procfs or sysfs must
-#not be in this list. While a simple find on those special filesystems should
-#be harmless, operations such as "-exec grep something" are NOT SAFE and may
-#have HARMFUL SIDE-EFFECTS, especially when performed as root.
+# Convenience script to print a list of files and directories belonging
+# to a package user, or execute arbitrary "find" actions on them.
+
+# The following list should contain the mount points of all filesystems
+# that are to be scanned as a space-separated list within parentheses.
+# / will usually be in this list and if you have /usr
+# on a separate partition, it will also be in this list. Other non-special
+# filesystems where package users could own files should also be put in this
+# list.
+# Mount points whose filesystems are special, such as procfs or sysfs must
+# not be in this list. While a simple find on those special filesystems should
+# be harmless, operations such as "-exec grep something" are NOT SAFE and may
+# have HARMFUL SIDE-EFFECTS, especially when performed as root.
 fs_to_scan=(/)
 
-#Files with a path prefix found in the following list are ignored.
-#This list will usually contain the parent directory of your package users'
-#home directories, because normally you don't want to scan those. You can
-#also add other directories that will never contain package user files, such
-#as /home. This reduces scan time.
-#NOTE: The LFS-6.0 book uses a ramfs mounted on /dev and with that setup
-#/dev does not need to be in the prune list. But since there is no requirement
-#that /dev have its on filesystem it's better to prune it explicitly.
-#
-#NOTE: you may wish to add "/lfs" or whatever to your "prune_prefixes" if
-#both the host system and target system are using package users, especially
-#if the host and target system do not have entirely matching user ids for
-#each installed package.
-prune_prefixes=(/home /usr/src /dev /tools) #NO TRAILING SLASHES!!!!
+# Files with a path prefix found in the following list are ignored.
+# This list will usually contain the parent directory of your package users'
+# home directories, because normally you don't want to scan those. You can
+# also add other directories that will never contain package user files, such
+# as /home. This reduces scan time. These paths should not have trailing
+# slashes!
+prune_prefixes=(/home /usr/src /scaffolding)
 
 if [ $# -lt 1 -o "$1" = "--help" ]; then
   echo 1>&2
@@ -44,35 +40,35 @@ if [ $# -lt 1 -o "$1" = "--help" ]; then
   exit 1
 fi
 
-#suppress ugly debug output from shell
+# suppress ugly debug output from shell
 trap ':' SIGPIPE
 
 ugname="$1"
-shift 1  #remove user_or_group_name from argument list
+shift 1  # remove user_or_group_name from argument list
 
 ugmatcher=(-false)
-#test if find accepts ugname as a user, and append to ugmatcher if it does
+# test if find accepts ugname as a user, and append to ugmatcher if it does
 if find / -maxdepth 0 -user "$ugname" >/dev/null 2>&1 ; then
   ugmatcher[${#ugmatcher[@]}]="-or"
   ugmatcher[${#ugmatcher[@]}]="-user"
   ugmatcher[${#ugmatcher[@]}]="$ugname"
 fi
-#test if find accepts ugname as a group, and append to ugmatcher if it does
+# test if find accepts ugname as a group, and append to ugmatcher if it does
 if find / -maxdepth 0 -group "$ugname" >/dev/null 2>&1 ; then
   ugmatcher[${#ugmatcher[@]}]="-or"
   ugmatcher[${#ugmatcher[@]}]="-group"
   ugmatcher[${#ugmatcher[@]}]="$ugname"
 fi
 
-#if find accepted ugname as neither user nor group, then exit
+# if find accepted ugname as neither user nor group, then exit
 if [ "${#ugmatcher[@]}" = 1 ]; then
   echo 1>&2 'find does not accept `'"$ugname'"' as group or user name'
   exit 1
 fi
 
-#construct find commands that match the prune_prefixes. Each prefix will be
-#matched as -path <prefix> -or -path <prefix>/*
-#so that the directory itself and all subdirectories are matched.
+# construct find commands that match the prune_prefixes. Each prefix will be
+# matched as -path <prefix> -or -path <prefix>/*
+# so that the directory itself and all subdirectories are matched.
 y=(\( -false)
 for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1))
 do
@@ -85,12 +81,12 @@ do
 done
 y[${#y[@]}]=')'
 
-#In the following find command, the part
-# -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
-#is responsible for preventing the files that match prune_prefixes from
-#being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
-#-prune has no effect and is always false when -depth is used.
-#The -true before "$@" ensures that -depth can be passed as only parameter.
+# In the following find command, the part
+#   -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
+# is responsible for preventing the files that match prune_prefixes from
+# being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
+# -prune has no effect and is always false when -depth is used.
+# The -true before "$@" allows -depth to be passed as the only parameter.
 find "${fs_to_scan[@]}" -xdev -noleaf \
      -not \( \( "${y[@]}" -prune \) -or "${y[@]}" \) \
      -and \( "${ugmatcher[@]}" \) -and \( -true "$@" \)

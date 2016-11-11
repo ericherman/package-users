@@ -3,35 +3,36 @@
 # You may do everything with this code except misrepresent its origin.
 # PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
 
-#The following list should contain the mount points of all filesystems
-#that are to be scanned as a space-separated list within parentheses.
-#/ will usually be in this list and if you have /usr
-#on a separate partition, it will also be in this list. Other non-special
-#filesystems where suspicious files could be located should also be put in
-#this list.
-#Mount points whose filesystems are special, such as procfs or sysfs should
-#not be in this list.
+# The following list should contain the mount points of all filesystems
+# that are to be scanned as a space-separated list within parentheses.
+# / will usually be in this list and if you have /usr
+# on a separate partition, it will also be in this list. Other non-special
+# filesystems where suspicious files could be located should also be put in
+# this list.
+# Mount points whose filesystems are special, such as procfs or sysfs should
+# not be in this list.
 fs_to_scan=(/)
 
-#Files with a path prefix found in the following list are ignored.
-#DO !!!!NOT!!! PUT /usr/src OR WHATEVER THE HOME DIRECTORY prefix is for your
-#package users into this list!!! You DO want to scan those directories in
-#order to spot e.g. world-writable tarballs and other abominations that
-#may have crept in.
-#Ideally, this list should be empty.
-prune_prefixes=() #NO TRAILING SLASHES!!!
+# Files with a path prefix found in the following list are ignored.
+# DO !!!!NOT!!! PUT /usr/src OR WHATEVER THE HOME DIRECTORY prefix is for your
+# package users into this list!!! You DO want to scan those directories in
+# order to spot e.g. world-writable tarballs and other abominations that
+# may have crept in.
+# Ideally, this list should be empty.
+# Entries in this list should not have trailing slashes.
+prune_prefixes=()
 
-#If the following variable is set to "yes", then files that contain
-#control characters or other non-printable characters (except for space)
-#will be reported as suspicious.
-#This test slows down the search considerably!
+# If the following variable is set to "yes", then files that contain
+# control characters or other non-printable characters (except for space)
+# will be reported as suspicious.
+# This test slows down the search considerably!
 enable_illchars=yes
 
 
-#suppress ugly debug output from shell
+# suppress ugly debug output from shell
 trap ':' SIGPIPE
 
-#"-false" as 1st argument is used when called by list_suspicious_files_from
+# "-false" as 1st argument is used when called by list_suspicious_files_from
 if [ $# -ge 1 -a "$1" != "-false" ]; then
   echo 1>&2
   echo 1>&2 "USAGE: ${0##*/}"
@@ -48,9 +49,10 @@ if [ "$1" = "-false" ]; then
   usergroupmatch=(\( "$@" \))
 fi
 
-#construct find commands that match the prune_prefixes. Each prefix will be
-#matched as -path <prefix> -or -path <prefix>/*
-#so that the directory itself and all subdirectories are matched.
+# construct find commands that match the prune_prefixes. Each prefix will be
+# matched as -path <prefix> -or -path <prefix>/*
+# so that the directory itself and all its files and subdirectories are
+# matched.
 y=(\( -false)
 for ((i=0; $i<${#prune_prefixes[@]}; i=$i+1))
 do
@@ -74,11 +76,10 @@ illchars=( $'\x1'  $'\x2'  $'\x3'  $'\x4'  $'\x5'  $'\x6'  $'\x7'  $'\x8'
 
 
 if [ "$enable_illchars" = yes ]; then
-
   illname=(\( -false)
   for ((i=0; $i<${#illchars[@]}; i=$i+1))
   do
-    #handle bash \x7f error
+    # handle bash \x7f error
     if [ "*${illchars[$i]}*" = "**" ]; then
       illchars[$i]=$'\x80'  #'
     fi
@@ -96,7 +97,7 @@ if [ "$enable_illchars" = yes ]; then
     illlink[${#illlink[@]}]="*${illchars[$i]}*"
   done
   illlink[${#illlink[@]}]=')'
-else #if [ "$enable_illchars" = no ]
+else # if [ "$enable_illchars" = no ]
   illlink=(-false)
   illname=(-false)
 fi
@@ -168,7 +169,7 @@ bad=(
  OP \( -type d -not -group install -not "${dirgoodperm[@]}"  $(report  "DIRECTORIES WITH UNUSUAL PERMISSIONS")  \)
 )
 
-#insert unique codes for the messages
+# insert unique codes for the messages
 code=100
 for ((i=0; $i<${#bad[@]}; i=$i+1))
 do
@@ -180,8 +181,8 @@ do
   fi
 done
 
-allbad=()  #all bad matches are reported
-onebad=()  #only the first bad match is reported
+allbad=()  # all bad matches are reported
+onebad=()  # only the first bad match is reported
 for ((i=0; $i<${#bad[@]}; i=$i+1))
 do
   if [ "${bad[$i]}" = "OP" ]; then
@@ -193,23 +194,23 @@ do
   fi
 done
 
-#Add a default case to onebad.
-#This should never be hit, because the explicit cases should catch all
-#files, but just in case I've missed something, this will catch it.
+# Add a default case to onebad.
+# This should never be hit, because the explicit cases should catch all
+# files, but just in case I've missed something, this will catch it.
 onebad=("${onebad[@]}" -or  $(report  "WEIRD SHIT") )
 
-#make allbad always return false
+# make allbad always return false
 allbad=("${allbad[@]}" , -false)
 
 cmd=( "${usergroupmatch[@]}" -and
      \( \( "${good[@]}" \) -or \( "${allbad[@]}" \) -or \( "${onebad[@]}" \) \)
     )
 
-#In the following find command, the part
-# -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
-#is responsible for preventing the files that match prune_prefixes from
-#being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
-#-prune has no effect and is always false when -depth is used.
+# In the following find command, the part
+#    -not ( ( "${y[@]}" -prune ) -or "${y[@]}" )
+# is responsible for preventing the files that match prune_prefixes from
+# being processed. The 2nd "${y[@]}" may seem redundant, but it isn't, because
+# -prune has no effect and is always false when -depth is used.
 find "${fs_to_scan[@]}" -xdev -noleaf \
      -not \( \( "${y[@]}" -prune \) -or "${y[@]}" \) \
      -and \( "${cmd[@]}" \) |

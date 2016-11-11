@@ -37,7 +37,7 @@ fi
 
 ugname="$1"
 
-#suppress ugly debug output from shell
+# suppress ugly debug output from shell
 trap ':' SIGPIPE
 
 if [ $# -gt 1 ]; then
@@ -77,7 +77,7 @@ expand_command()
 
   if [ -z "$manline" ]; then
     description='No manpage'
-    #the "l" at the beginning is just to make it sort after "lib"
+    # the "l" at the beginning is just to make it sort after "lib"
     echo -n "lmanlessbin $cmdname" | sanitize
     echo
 
@@ -108,7 +108,7 @@ expand_command()
   echo -n "binexe $cmdname" | sanitize
   test "$linktarget" != '(->)' && echo -n "$linktarget" | sanitize
   echo
-  #the "lx" in "lxdescription" is just to make sure it sorts after "lmanlessbin"
+  # the "lx" in "lxdescription" is just to make sure it sorts after "lmanlessbin"
   echo -n "lxdescription $cmdname: $description" | sanitize
   echo
 }
@@ -192,7 +192,7 @@ forall_direntries_from "$ugname" "${cmd[@]}" | sort -u |
     esac
 
   done
-} | sort |  #no -u here, bc. the above processing may equalize different files
+} | sort |  # no -u here, bc. the above processing may equalize different files
 {
 # (1) binexe: Executables (in *bin/)
 # (2) lib: Libraries (in *lib/*)
