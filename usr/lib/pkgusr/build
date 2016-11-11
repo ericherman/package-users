@@ -7,8 +7,8 @@
 # If run from the home directory, there should be a source tarball in
 # $HOME/src; it will be unpacked.  The top-level directory created by
 # unpacking the tarball should be the same as the first part of the
-# tarball. Then, if there are patches in a directory $HOME/patches, they
-# will be applied (with `-p1`).
+# tarball name. Then, if there are patches in a directory $HOME/patches,
+# they will be applied (with `-p1`).
 #
 # It will create 8 log files in the $HOME/logs directory:
 #   00-configure.log: All messages output during configure
@@ -37,7 +37,6 @@ function apply_patches()
     do
         if [ -f $PATCH ]; then
             patch -p1 < $PATCH || exit 3
-            # echo $PATCH >> ~/.project
         fi
     done
 }
@@ -89,13 +88,14 @@ then
         cd ${SOURCE_DIR} || exit 2
     fi
 
-    # add package name to .project
-    # echo $(basename $(readlink -f $(pwd))) >> ~/.project
     if [ -d "${HOME}/patches" ]
     then
         apply_patches
     fi
 fi
+
+# the .project file should start with the package name and version
+echo $(basename $(readlink -f $(pwd))) > ~/.project
 
 if [ -n "${BUILD_DIR}" ]
 then
