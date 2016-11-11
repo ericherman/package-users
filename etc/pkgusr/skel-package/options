@@ -11,11 +11,10 @@
 # `export BUILD_DIR=../build-binutils`)
 #
 # You should copy a source tarball into a `src` subdirectory, and put
-# patches into a `patches` subdirectory, in which case the build script
-# will unpack and patch the source for you. If the tarball unpacks to a
-# such that the top-level directory does not match the package user
-# name, set the SOUCRE_DIR_PREFIX to match the tarball's top-level
-# directory.
+# patches into a `patches` subdirectory; the build script will unpack
+# and patch the source for you. If the tarball unpacks such that the
+# top-level directory does not match the package user name, set the
+# SOURCE_DIR_PREFIX to match the tarball's top-level directory.
 #
 # These are default versions of the build functions (configure_commands,
 # make_commands, test_commands, install_commands). Change them as
