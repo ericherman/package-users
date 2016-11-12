@@ -20,11 +20,12 @@ fi
 
 cd /usr/src/$PACKAGE
 
-while $(pgrep -u $PACKAGE -f build)
+while [ $(pgrep -u $PACKAGE -f build | wc -l) -ne 0 ]
 do
-  LOG=$(ls -d1 /usr/src/$PACKAGE/0* | tail -n 1)
-  export L=$(($(tput lines) - 1))
+  LOG=$(ls -d1 /usr/src/$PACKAGE/logs/0* | tail -n 1)
+  export L=$(($(tput lines) - 3))
   clear
+  date
   ls -l $LOG
   tail -n $L $LOG | elide_middle
   sleep 2;
