@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# chown the symlinks that point into /tools so that they can be
+# overwritten by the final versions of the files once the
+# appropriate package is built.  Run create-lfs-users first.
+
+chown -h gcc:gcc /usr/lib/libgcc_s* /usr/lib/libstdc++*
+chown -h coreutils:coreutils /bin/{cat,pwd,stty,echo}
+chown -h bash:bash /bin/{bash,sh}
+chown -h grep:grep /bin/grep
+chown -h perl:perl /usr/bin/perl
+chown -h file:file /usr/bin/file
+chown shadow:shadow /etc/{login.defs,login.access,limits}
+chown -R shadow:shadow /etc/default
+
+rm -f $0
