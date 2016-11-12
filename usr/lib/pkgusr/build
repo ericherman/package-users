@@ -37,6 +37,7 @@ function apply_patches()
     do
         if [ -f $PATCH ]; then
             patch -p1 < $PATCH || exit 3
+            # basename $PATCH >> ~/.project
         fi
     done
 }
