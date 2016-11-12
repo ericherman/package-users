@@ -48,12 +48,12 @@
 /usr/bin
 /usr/doc
 /usr/etc
-/usr/include/*
 /usr/include
+/usr/include/*
 /usr/include/GL
 /usr/info
-/usr/lib/*
 /usr/lib
+/usr/lib/*
 /usr/lib/modules/*
 /usr/local/bin
 /usr/local/doc
