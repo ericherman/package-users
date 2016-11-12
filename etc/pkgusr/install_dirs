@@ -55,6 +55,8 @@
 /usr/lib
 /usr/lib/*
 /usr/lib/modules/*
+/usr/libexec
+/usr/libexec/*
 /usr/local/bin
 /usr/local/doc
 /usr/local/etc
@@ -63,6 +65,8 @@
 /usr/local/lib
 /usr/local/sbin
 /usr/local/share
+/usr/local/share/*
+/usr/local/share/dbus-1/*
 /usr/local/share/doc
 /usr/local/share/info
 /usr/local/share/locale
@@ -79,6 +83,7 @@
 /usr/share/applications
 /usr/share/dbus-1/*
 /usr/share/doc
+/usr/share/doc/*
 /usr/share/gdb/auto-load
 /usr/share/guile
 /usr/share/icons/*
@@ -102,6 +107,7 @@
 /var/cache
 /var/db
 /var/lib
+/var/lib/db
 /var/lib/scrollkeeper/*
 /var/log
 /var/opt
