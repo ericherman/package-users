@@ -27,6 +27,8 @@ do
   clear
   date
   ls -l $LOG
-  tail -n $L $LOG | elide_middle
+  if [ "_${LOG}_" != "__" ]; then
+    tail -n $L $LOG | elide_middle
+  fi
   sleep 2;
 done
