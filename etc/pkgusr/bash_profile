@@ -22,6 +22,14 @@ export PATH=/usr/lib/pkgusr:/bin:/usr/bin:/usr/X11R6/bin:/sbin:/usr/sbin
 # point /scaffolding is no longer needed and should be deleted).
 export PATH=${PATH}:/scaffolding/bin:/scaffolding/sbin
 
+# Similarly, library directories under /scaffolding need to be in the
+# LD_LIBRARY_PATH during the first part of the final system build; as
+# with PATH, the default library search directories should be preferred.
+# This entire directive should be removed once the final system
+# libraries are present.
+export LD_LIBRARY_PATH=/lib:/usr/lib:/scaffolding/lib:/scaffolding/lib64:/scaffolding/lib32
+
+
 # Make the shell prompt reflect that we are a package user.
 export PROMPT_COMMAND='PS1="package \u:"`pwd`"> "'
 # Alternatively, make it stand out more with color

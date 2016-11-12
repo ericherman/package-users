@@ -52,8 +52,8 @@ if [ $UID -ne 0 ]; then echo Please run this script as root. ; exit 1; fi
 # test if user already exists
 grep "^$NAME:.*" /etc/passwd
 if [ $? -eq 0 ]; then
-  echo 'Package user already exists! Do su '$name' to do maintenance work.'
-  exit 1
+  echo "Package user already exists! Do su '$NAME' to do maintenance work."
+  exit 0
 fi
 
 UIDLIST=$(cut -d : -f 3 /etc/passwd | sort -n)
