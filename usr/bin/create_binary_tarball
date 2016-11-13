@@ -1,0 +1,35 @@
+#!/bin/bash
+# Copyright (c) 2016 Brett Neumeier <brett@freesa.org>
+# You may do everything with this code except misrepresent its origin.
+# PROVIDED `AS IS' WITH ABSOLUTELY NO WARRANTY OF ANY KIND!
+
+if [ $# -gt 0 ]; then
+  echo 1>&2
+  echo 1>&2 "USAGE: ${0##*/}"
+  echo 1>&2
+  echo 1>&2 '  Create a tar archive of the current installed files for the current'
+  echo 1>&2 '  package user. The archive will be written to the package user home'
+  echo 1>&2 '  directory and will have the current date (YYYYMMDD) as'
+  echo 1>&2 '  its version number.'
+  echo 1>&2
+  echo 1>&2 '  This script uses forall_direntries_from.'
+  exit 1
+fi
+
+# suppress ugly debug output from shell
+trap ':' SIGPIPE
+
+TMPFILE=$(mktemp -t $USER.XXXXXXXXX)
+TARBALL="binary-$USER-$(date +%Y%m%d).tar.lz"
+
+forall_direntries_from $USER > $TMPFILE
+
+cd /
+
+tar -c \
+    -f $HOME/$TARBALL \
+    --lzip \
+    --verbatim-files-from \
+    -T $TMPFILE && echo "Binary file created successfully."
+
+rm -f $TMPFILE
