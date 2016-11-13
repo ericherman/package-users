@@ -24,7 +24,7 @@ fs_to_scan=(/)
 # also add other directories that will never contain package user files, such
 # as /home. This reduces scan time. These paths should not have trailing
 # slashes!
-prune_prefixes=(/home /usr/src /scaffolding)
+prune_prefixes=(/home /usr/src)
 
 if [ $# -lt 1 -o "$1" = "--help" ]; then
   echo 1>&2
